@@ -84,13 +84,13 @@ namespace GameServer.Game.Net
             else
                 _ips.TryAdd(ip, 1);
 
+            _log.Debug($"Received client @ {ip}");
+
             var user = _userFactory.Pop(); // Give the connection a NetClient instance to communicate with
             user.Setup(ip, skt);
             _users.Add(user);
 
             RealmManager.ConnectUser(user);
-
-            _log.Debug($"Received client @ {user.Network.IP}");
 
             // Recycle the SAEA object
             args.Dispose();

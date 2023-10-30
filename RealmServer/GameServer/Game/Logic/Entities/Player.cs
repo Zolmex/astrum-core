@@ -67,10 +67,5 @@ namespace GameServer.Game.Logic.Entities
 
             return true;
         }
-
-        public override void Move(float posX, float posY)
-        {
-            base.Move(posX, posY);
-        }
     }
 }

@@ -20,14 +20,12 @@ namespace GameServer.Game.Logic
         public virtual void Update()
         {
             while (_adds.TryDequeue(out var newValue))
-                lock (_dict)
-                    if (_dict.TryAdd(newValue.Id, newValue))
-                        Count++;
+                if (_dict.TryAdd(newValue.Id, newValue))
+                    Count++;
 
             while (_drops.TryDequeue(out var oldValueId))
-                lock (_dict)
-                    if (_dict.Remove(oldValueId))
-                        Count--;
+                if (_dict.Remove(oldValueId))
+                    Count--;
         }
 
         public T Get(int itemId)

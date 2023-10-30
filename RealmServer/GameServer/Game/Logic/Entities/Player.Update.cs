@@ -17,16 +17,39 @@ namespace GameServer.Game.Logic.Entities
     {
         private const int SIGHT_RADIUS = 16;
         private const int SIGHT_RADIUS_SQR = SIGHT_RADIUS * SIGHT_RADIUS;
+        private const int ACTIVE_RADIUS = 1; // Activate surrounding chunks
 
         private readonly HashSet<WorldTile> _visibleTiles = new HashSet<WorldTile>();
         private readonly HashSet<WorldTile> _tilesDiscovered = new HashSet<WorldTile>();
         private readonly List<WorldTile> _newTiles = new List<WorldTile>();
 
+        private readonly ConcurrentQueue<Entity> _deadEntities = new ConcurrentQueue<Entity>();
         private readonly HashSet<Entity> _visibleEntities = new HashSet<Entity>();
         private readonly List<ObjectData> _newEntities = new List<ObjectData>();
         private readonly List<ObjectDropData> _oldEntities = new List<ObjectDropData>();
 
-        private readonly ConcurrentQueue<Entity> _deadEntities = new ConcurrentQueue<Entity>();
+        private MapChunk _chunk;
+
+        public override void Move(float posX, float posY)
+        {
+            base.Move(posX, posY);
+
+            if (_chunk != Tile.Chunk)
+            {
+                if (_chunk == null)
+                    _chunk = Tile.Chunk;
+                else
+                    for (var cY = _chunk.CY - ACTIVE_RADIUS; cY < _chunk.CY + ACTIVE_RADIUS; cY++) // Decrease activity of old nearby chunks
+                        for (var cX = _chunk.CX - ACTIVE_RADIUS; cX < _chunk.CX + ACTIVE_RADIUS; cX++)
+                            World.Map.Chunks[cX, cY].ActivityDown();
+
+                _chunk = Tile.Chunk; // Update current chunk
+
+                for (var cY = _chunk.CY - ACTIVE_RADIUS; cY < _chunk.CY + ACTIVE_RADIUS; cY++) // Increase activity of new nearby chunks
+                    for (var cX = _chunk.CX - ACTIVE_RADIUS; cX < _chunk.CX + ACTIVE_RADIUS; cX++)
+                        World.Map.Chunks[cX, cY].ActivityUp();
+            }
+        }
 
         private void SendUpdate()
         {
@@ -55,8 +78,8 @@ namespace GameServer.Game.Logic.Entities
                     var pY = (int)Position.Y;
                     var width = World.Map.Width;
                     var height = World.Map.Height;
-                    for (var x = pX - SIGHT_RADIUS; x < pX + SIGHT_RADIUS; x++)
-                        for (var y = pY - SIGHT_RADIUS; y < pY + SIGHT_RADIUS; y++)
+                    for (var y = pY - SIGHT_RADIUS; y < pY + SIGHT_RADIUS; y++)
+                        for (var x = pX - SIGHT_RADIUS; x < pX + SIGHT_RADIUS; x++)
                             if (x >= 0 && x < width && y >= 0 && y < height && this.TileDistSqr(x, y) <= SIGHT_RADIUS_SQR)
                             {
                                 var tile = World.Map[x, y];

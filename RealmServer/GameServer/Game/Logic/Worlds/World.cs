@@ -107,10 +107,10 @@ namespace GameServer.Game.Logic.Worlds
                 return;
             }
 
-            Parallel.ForEach(Entities, kvp =>
+            Parallel.ForEach(Entities, kvp => // Later try with custom .Where implementation
             {
                 var en = kvp.Value;
-                if (!en.Dead)
+                if (!en.Dead && en.Tile?.Chunk?.Activity > 0)
                     en.Tick(time);
             });
         }
