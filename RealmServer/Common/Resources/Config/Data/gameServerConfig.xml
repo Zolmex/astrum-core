@@ -1,0 +1,11 @@
+﻿<GameServerConfig>
+  <XmlsDir>Resources/Xml/Data/</XmlsDir>
+  <WorldsDir>Resources/World/Data/</WorldsDir>
+  <Port>2050</Port>
+  <Address>127.0.0.1</Address>
+  <ServerName>Localhost</ServerName>
+  <TPS>20</TPS>
+  <MaxPlayers>200</MaxPlayers>
+  <Version>0.3.3</Version>
+  <!--<AdminOnly/>-->
+</GameServerConfig>

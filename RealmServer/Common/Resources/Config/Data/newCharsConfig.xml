@@ -1,0 +1,10 @@
+﻿<NewCharsConfig>
+  <Experience>0</Experience>
+  <Level>1</Level>
+  <Fame>0</Fame>
+  <Tex1>0</Tex1>
+  <Tex2>0</Tex2>
+  <HealthPotions>1</HealthPotions>
+  <MagicPotions>1</MagicPotions>
+  <!--<HasBackpack/>-->
+</NewCharsConfig>

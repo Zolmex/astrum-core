@@ -1,0 +1,7 @@
+﻿<DatabaseConfig>
+  <Host>127.0.0.1</Host>
+  <Port>6379</Port>
+  <Password></Password>
+  <DbIndex>0</DbIndex>
+  <MaxAccountsPerIP>1</MaxAccountsPerIP>
+</DatabaseConfig>

@@ -1,0 +1,27 @@
+﻿<NewsConfig>
+  <Models>
+    [
+    {
+    "Icon": "",
+    "Title": "News Title 1",
+    "TagLine": "News Tag Line",
+    "Link": "",
+    "Date": 0
+    },
+    {
+    "Icon": "",
+    "Title": "News Title 2",
+    "TagLine": "News Tag Line",
+    "Link": "",
+    "Date": 0
+    },
+    {
+    "Icon": "",
+    "Title": "News Title 3",
+    "TagLine": "News Tag Line",
+    "Link": "",
+    "Date": 0
+    },
+    ]
+  </Models>
+</NewsConfig>

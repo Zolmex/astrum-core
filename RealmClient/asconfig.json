@@ -1,0 +1,14 @@
+{
+	"config": "air",
+	"compilerOptions": {
+		"output": "bin-debug/WebMain.swf",
+		"source-path": [
+			"src"
+		],
+		"library-path": [
+			"libs"
+		]
+	},
+	"mainClass": "WebMain",
+	"application": "WebMain-app.xml"
+}

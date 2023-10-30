@@ -1,0 +1,9 @@
+﻿{
+  "Id": 0,
+  "Name": "Test",
+  "DisplayName": "Test World",
+  "Difficulty": -1,
+  "MaxPlayers": -1,
+  "Blocksight": 0,
+  "Maps": []
+}

@@ -1,0 +1,23 @@
+<Regions>
+	<Region type="0x01" id="Spawn">
+		<Color>0x00FF00</Color>
+	</Region>
+	<Region type="0x02" id="Enemy">
+		<Color>0xDC3146</Color>
+	</Region>
+	<Region type="0x03" id="Store 1">
+		<Color>0xFFDCF3</Color>
+	</Region>
+	<Region type="0x04" id="Store 2">
+		<Color>0xD9FFF3</Color>
+	</Region>
+	<Region type="0x05" id="Store 3">
+		<Color>0xC6B1FF</Color>
+	</Region>
+	<Region type="0x06" id="Store 4">
+		<Color>0xB1DAFF</Color>
+	</Region>
+	<Region type="0x07" id="Store 5">
+		<Color>0xFCFFB1</Color>
+	</Region>
+</Regions>

@@ -1,0 +1,7 @@
+﻿<NewAccountsConfig>
+  <Fame>100000</Fame>
+  <Credits>100000</Credits>
+  <MaxChars>2</MaxChars>
+  <VaultCount>2</VaultCount>
+  <CharSlotCost>1000</CharSlotCost>
+</NewAccountsConfig>
