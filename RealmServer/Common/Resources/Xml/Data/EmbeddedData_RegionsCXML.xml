@@ -20,4 +20,7 @@
 	<Region type="0x07" id="Store 5">
 		<Color>0xFCFFB1</Color>
 	</Region>
+	<Region type="0x1d" id="Realm Portals">
+		<Color>0xBBFFBB</Color>
+	</Region>
 </Regions>

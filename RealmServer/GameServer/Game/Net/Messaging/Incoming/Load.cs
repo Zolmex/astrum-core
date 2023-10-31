@@ -30,7 +30,7 @@ namespace GameServer.Game.Net.Messaging.Incoming
             else
             {
                 var world = user.GameInfo.World;
-                if (world == null || world.Deleted || !world.Alive)
+                if (world == null || world.Deleted)
                 {
                     user.SendFailure(Failure.DEFAULT, "World does not exist.");
                     return;

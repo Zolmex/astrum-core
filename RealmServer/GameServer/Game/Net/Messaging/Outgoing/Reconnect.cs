@@ -6,29 +6,20 @@ using System.IO;
 
 namespace GameServer.Game.Net.Messaging.Outgoing
 {
-    public class Failure : OutgoingPacket
+    public class Reconnect : OutgoingPacket
     {
-        public const string DEFAULT_MESSAGE = "An error occured while processing data from your client.";
-        public const int DEFAULT = 0;
-        public const int INCORRECT_VERSION = 1;
-        public const int FORCE_CLOSE_GAME = 2;
-        public const int INVALID_TELEPORT_TARGET = 3;
-        public const int ACCOUNT_IN_USE = 4;
+        public int GameId { get; set; }
 
-        public int ErrorId { get; set; }
-        public string ErrorDescription { get; set; }
+        public override PacketId ID => PacketId.RECONNECT;
 
-        public override PacketId ID => PacketId.FAILURE;
-
-        public static StreamWriteInfo Write(User user, int errorId, string errorDescription)
+        public static StreamWriteInfo Write(User user, int gameId)
         {
-            var pkt = user.GetPacket(PacketId.FAILURE);
+            var pkt = user.GetPacket(PacketId.RECONNECT);
             var wtr = pkt.Writer;
             lock (pkt)
             {
                 var offset = (int)wtr.BaseStream.Position;
-                wtr.Write(errorId);
-                wtr.WriteUTF(errorDescription);
+                wtr.Write(gameId);
                 var length = (int)wtr.BaseStream.Position - offset;
                 return new StreamWriteInfo(offset, length);
             }
@@ -36,7 +27,7 @@ namespace GameServer.Game.Net.Messaging.Outgoing
 
         public override string ToString()
         {
-            var type = typeof(Failure);
+            var type = typeof(Reconnect);
             var props = type.GetProperties();
             var ret = $"\n";
             foreach (var prop in props)

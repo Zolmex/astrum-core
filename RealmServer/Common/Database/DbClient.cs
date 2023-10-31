@@ -258,5 +258,18 @@ namespace Common.Database
 
             return trans.Execute();
         }
+
+        public static void AccInUse(DbAccount acc, bool value)
+        {
+            if (acc == null)
+                return;
+
+            var trans = _db.CreateTransaction();
+
+            acc.AccInUse = value;
+            acc.Save(trans);
+
+            trans.Execute(CommandFlags.FireAndForget);
+        }
     }
 }

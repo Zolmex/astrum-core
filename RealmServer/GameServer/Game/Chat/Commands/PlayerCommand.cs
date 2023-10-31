@@ -1,4 +1,5 @@
-﻿using GameServer.Game.Logic.Entities;
+﻿using Common.Utilities;
+using GameServer.Game.Logic.Entities;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -16,6 +17,13 @@ namespace GameServer.Game.Chat.Commands
 
         public abstract string Name { get; }
         public abstract bool AdminOnly { get; }
+
+        protected readonly Logger _log;
+
+        public PlayerCommand()
+        {
+            _log = new Logger(GetType());
+        }
 
         public abstract void Execute(Player player, string args);
 

@@ -1,4 +1,5 @@
 ﻿using Common.Utilities;
+using GameServer.Game.Chat;
 using GameServer.Game.Chat.Commands;
 using GameServer.Game.Logic;
 using GameServer.Game.Logic.Worlds;
@@ -27,6 +28,8 @@ namespace GameServer.Game
 
         public static readonly UserCollection Users = new UserCollection();
         public static readonly WorldCollection Worlds = new WorldCollection();
+
+        public static readonly List<string> ActiveRealms = new List<string>();
 
         public static void Init()
         {
@@ -98,6 +101,17 @@ namespace GameServer.Game
         public static World GetWorld(int worldId)
         {
             return Worlds.Get(worldId);
+        }
+
+        public static World GetWorld(string worldName)
+        {
+            return Worlds.Get(worldName);
+        }
+
+        public static void OnRealmAdded(string realmName)
+        {
+            ActiveRealms.Add(realmName);
+            ChatManager.Announce($"A portal to {realmName} has been opened.");
         }
     }
 }

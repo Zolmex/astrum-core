@@ -110,9 +110,9 @@ namespace GameServer.Game.Logic.Entities
 
         public void ExecuteCommand(string text)
         {
-            var spaceIndex = !text.Contains(' ') ? text.Length : text.IndexOf(' ');
-            var command = text.Substring(0, spaceIndex);
-            var args = text.Substring(spaceIndex);
+            var spaceIndex = text.IndexOf(' ');
+            var command = text.Substring(0, spaceIndex == -1 ? text.Length : spaceIndex);
+            var args = spaceIndex == -1 ? null : text.Substring(spaceIndex + 1);
             PlayerCommand.ExecuteCommand(this, command, args);
         }
     }

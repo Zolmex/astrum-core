@@ -11,7 +11,7 @@ namespace Common.Resources.World
         private static readonly Logger Log = new Logger(typeof(WorldLibrary));
 
         public static readonly Dictionary<string, WorldConfig> WorldConfigs = new Dictionary<string, WorldConfig>();
-        public static readonly Dictionary<string, JsonMap[]> JsonMaps = new Dictionary<string, JsonMap[]>();
+        public static readonly Dictionary<string, MapData[]> MapDatas = new Dictionary<string, MapData[]>();
 
         /// <summary>
         /// Loads every .json file in the directory <paramref name="dir"/>.
@@ -27,18 +27,18 @@ namespace Common.Resources.World
                 var config = JsonConvert.DeserializeObject<WorldConfig>(File.ReadAllText(file));
                 var maps = DeserializeMaps(config);
                 WorldConfigs[config.Name] = config;
-                JsonMaps[config.Name] = maps;
+                MapDatas[config.Name] = maps;
             }
             Log.Info("World Library loaded successfully.");
         }
 
-        private static JsonMap[] DeserializeMaps(WorldConfig config)
+        private static MapData[] DeserializeMaps(WorldConfig config)
         {
-            var list = new List<JsonMap>();
+            var list = new List<MapData>();
             foreach (string mapName in config.Maps)
             {
-                string data = File.ReadAllText(GameServerConfig.Config.WorldsDir + $"{mapName}.jm");
-                list.Add(new JsonMap(data));
+                var data = File.ReadAllBytes(GameServerConfig.Config.WorldsDir + mapName);
+                list.Add(new MapData(data, mapName.EndsWith(".wmap")));
             }
             return list.ToArray();
         }

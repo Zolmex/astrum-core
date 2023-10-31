@@ -47,6 +47,12 @@ namespace GameServer.Game.Net.Messaging.Incoming
                 return;
             }
 
+            if (acc.AccInUse && user.State != ConnectionState.Reconnecting) // Ignore account in use for users in the reconnecting state
+            {
+                user.SendFailure(Failure.ACCOUNT_IN_USE, "Account in use.");
+                return;
+            }
+
             if (GameServerConfig.Config.AdminOnly && !acc.Admin)
             {
                 user.SendFailure(Failure.DEFAULT, "Admin only server.");
@@ -61,7 +67,7 @@ namespace GameServer.Game.Net.Messaging.Incoming
             }
 
             var seed = (uint)new Random().Next(1, int.MaxValue);
-            user.SetGameInfo(acc, seed, GameId);
+            user.SetGameInfo(acc, seed, world);
 
             user.SendPacket(PacketId.MAPINFO, MapInfo.Write(user,
                 world.Map.Width,

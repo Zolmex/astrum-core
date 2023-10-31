@@ -15,8 +15,8 @@ namespace GameServer.Game.Logic.Entities
 {
     public partial class Player
     {
-        private const int SIGHT_RADIUS = 16;
-        private const int SIGHT_RADIUS_SQR = SIGHT_RADIUS * SIGHT_RADIUS;
+        public const int SIGHT_RADIUS = 16;
+        public const int SIGHT_RADIUS_SQR = SIGHT_RADIUS * SIGHT_RADIUS;
         private const int ACTIVE_RADIUS = 1; // Activate surrounding chunks
 
         private readonly HashSet<WorldTile> _visibleTiles = new HashSet<WorldTile>();

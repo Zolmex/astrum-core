@@ -15,12 +15,13 @@ namespace GameServer.Game.Logic.Worlds
     public class World : IIdentifiable
     {
         public const string NEXUS = "Nexus";
+        public const int NEXUS_ID = -1;
+        public const string REALM = "Realm";
         public const int UNBLOCKED_SIGHT = 0;
 
         public int Id { get; set; }
-        public string Name { get; private set; }
+        public string Name { get; protected set; }
 
-        public bool Alive { get; private set; }
         public bool Disposed { get; private set; }
         public bool Deleted { get; private set; }
         public WorldConfig Config { get; private set; }
@@ -32,7 +33,7 @@ namespace GameServer.Game.Logic.Worlds
 
         public readonly EntityCollection Entities; // Complete list of entities in this world
         public readonly PlayerCollection Players;
-        private readonly Logger _log;
+        protected readonly Logger _log;
 
         private long _startTime;
 
@@ -49,10 +50,8 @@ namespace GameServer.Game.Logic.Worlds
             Players = new PlayerCollection();
         }
 
-        public void Initialize()
+        public virtual void Initialize()
         {
-            Alive = true;
-
             LoadMap(Config.Name, MapId);
 
             _startTime = RealmManager.GlobalTime.TotalElapsedMs;
@@ -60,10 +59,13 @@ namespace GameServer.Game.Logic.Worlds
 
         public void LoadMap(string mapName, int mapId)
         {
-            var maps = WorldLibrary.JsonMaps[mapName]; // Load our json maps
+            var maps = WorldLibrary.MapDatas[mapName]; // Load our json maps
 
             if (maps.Length > 0)
             {
+                if (mapId == -1)
+                    mapId = Random.Shared.Next(maps.Length - 1);
+
                 var jsonMap = maps[mapId];
 
                 Map = new WorldMap(jsonMap);
@@ -120,7 +122,7 @@ namespace GameServer.Game.Logic.Worlds
             Deleted = true;
 
             foreach (var kvp in Entities)
-                kvp.Value.Death();
+                kvp.Value.LeaveWorld();
 
             Update(); // Perform one last time
 

@@ -23,6 +23,7 @@ namespace Common.Resources.Config
         public int MaxClientsPerIP { get; private set; }
         public string Version { get; private set; }
         public bool AdminOnly { get; private set; }
+        public int RealmCount { get; private set; }
 
         public GameServerConfig(XElement e)
         {
@@ -37,6 +38,7 @@ namespace Common.Resources.Config
             MaxClientsPerIP = e.GetValue<int>("MaxClientsPerIP");
             Version = e.GetValue<string>("Version");
             AdminOnly = e.HasElement("AdminOnly");
+            RealmCount = e.GetValue<int>("RealmCount");
         }
 
         private static GameServerConfig Load()

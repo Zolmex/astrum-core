@@ -10,6 +10,7 @@ namespace Common.Resources.Xml
 {
     public class ObjectDesc
     {
+        public readonly XElement XML;
         public readonly string ObjectId;
         public readonly ushort ObjectType;
 
@@ -47,6 +48,9 @@ namespace Common.Resources.Xml
         public readonly int MaxHP;
         public readonly int Defense;
 
+        public readonly string DungeonName;
+        public readonly bool RealmPortal;
+
         public readonly Dictionary<int, ProjectileDesc> Projectiles;
         public readonly LootTableDesc LootTable;
         public readonly StateDesc BehaviorState;
@@ -54,6 +58,7 @@ namespace Common.Resources.Xml
 
         public ObjectDesc(XElement e, string id, ushort type)
         {
+            XML = e;
             ObjectId = id;
             ObjectType = type;
 
@@ -90,6 +95,9 @@ namespace Common.Resources.Xml
 
             MaxHP = e.GetValue<int>("MaxHitPoints", 100);
             Defense = e.GetValue<int>("Defense");
+
+            DungeonName = e.GetValue<string>("DungeonName");
+            RealmPortal = e.GetValue<bool>("RealmPortal");
 
             Projectiles = new Dictionary<int, ProjectileDesc>();
             foreach (XElement k in e.Elements("Projectile"))

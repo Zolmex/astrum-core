@@ -20,18 +20,20 @@ namespace GameServer.Game.Logic
         public override void Update()
         {
             while (_adds.TryDequeue(out var newEntity))
-                if (_dict.TryAdd(newEntity.Id, newEntity))
-                {
-                    Count++;
-                    newEntity.Initialize();
-                }
+                lock (_dict)
+                    if (_dict.TryAdd(newEntity.Id, newEntity))
+                    {
+                        Count++;
+                        newEntity.Initialize();
+                    }
 
             while (_drops.TryDequeue(out var oldEntityId))
-                if (_dict.Remove(oldEntityId, out var oldEntity))
-                {
-                    Count--;
-                    oldEntity.Dispose();
-                }
+                lock (_dict)
+                    if (_dict.Remove(oldEntityId, out var oldEntity))
+                    {
+                        Count--;
+                        oldEntity.Dispose();
+                    }
         }
     }
 }

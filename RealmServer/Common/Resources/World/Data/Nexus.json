@@ -6,5 +6,5 @@
   "MaxPlayers": -1,
   "Blocksight": 0,
   "LongLasting": true,
-  "Maps": [ "Nexus" ]
+  "Maps": [ "Nexus.jm" ]
 }

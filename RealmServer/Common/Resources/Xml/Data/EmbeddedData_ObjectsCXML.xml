@@ -333,9 +333,10 @@
   <Object type="0x0704" id="Realm Portal">
     <Class>Portal</Class>
     <IntergamePortal/>
+    <RealmPortal/>
     <Texture>
-      <File>lofiEnvironment</File>
-      <Index>0x7c</Index>
+      <File>lofiChar216x16</File>
+      <Index>0x3f</Index>
     </Texture>
   </Object>
   <Object type="0x070c" id="Glowing Portal">

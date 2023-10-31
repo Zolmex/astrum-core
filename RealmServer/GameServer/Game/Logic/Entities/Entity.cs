@@ -59,6 +59,15 @@ namespace GameServer.Game.Logic.Entities
         {
             var desc = XmlLibrary.ObjectDescs[objType];
 
+            if (desc.Class != null)
+                switch (desc.Class)
+                {
+                    case "Portal": // Dungeon portals
+                        var dungeonName = desc.DungeonName;
+                        if (dungeonName != null)
+                            return new Portal(objType);
+                        break;
+                }
             //if (desc.ConnectedWall || desc.CaveWall)
             //    return new ConnectedObject(objType);
             //if (desc.Static)
@@ -110,7 +119,7 @@ namespace GameServer.Game.Logic.Entities
             return true;
         }
 
-        public virtual void Death() // Replacement of LeaveWorld, makes things safer
+        public virtual void LeaveWorld()
         {
             lock (_deathLock)
             {

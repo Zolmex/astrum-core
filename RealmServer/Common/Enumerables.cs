@@ -297,4 +297,22 @@ namespace Common
         Flash = 15,
         ThrowProjectile = 16
     }
+
+    public enum TerrainType
+    {
+        None,
+        Mountains,
+        HighSand,
+        HighPlains,
+        HighForest,
+        MidSand,
+        MidPlains,
+        MidForest,
+        LowSand,
+        LowPlains,
+        LowForest,
+        ShoreSand,
+        ShorePlains,
+        BeachTowels
+    }
 }

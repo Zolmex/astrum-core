@@ -29,10 +29,10 @@ namespace GameServer.Game
             User = user;
         }
 
-        public void SetWorld(int worldId)
+        public void SetWorld(World world)
         {
             State = GameState.Loading;
-            World = RealmManager.GetWorld(worldId);
+            World = world;
         }
 
         public void Load(DbChar chr, World world)
@@ -47,7 +47,7 @@ namespace GameServer.Game
         {
             State = GameState.Idle;
 
-            Player.Death();
+            Player.LeaveWorld();
         }
 
         public void Reset()

@@ -64,12 +64,13 @@ namespace GameServer.Game
             Network.Start();
         }
 
-        public void SetGameInfo(DbAccount acc, uint randomSeed, int worldId)
+        public void SetGameInfo(DbAccount acc, uint randomSeed, World world)
         {
             Account = acc;
             Random = new ClientRandom(randomSeed);
 
-            GameInfo.SetWorld(worldId);
+            GameInfo.SetWorld(world);
+            DbClient.AccInUse(acc, true);
 
             State = ConnectionState.Ready;
         }
@@ -136,10 +137,22 @@ namespace GameServer.Game
                 State = ConnectionState.Disconnected;
 
                 Unload();
+                DbClient.AccInUse(Account, false);
 
                 RealmManager.DisconnectUser(this);
                 SocketServer.DisconnectUser(this);
             }
+        }
+
+        public void ReconnectTo(World world)
+        {
+            State = ConnectionState.Reconnecting;
+
+            Unload(); // Begin reconnect process, kill player entity and set gamestate to idle
+
+            SendPacket(PacketId.RECONNECT, Reconnect.Write(this,
+                world.Id
+                ));
         }
     }
 }
