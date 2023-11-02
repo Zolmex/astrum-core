@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace GameServer.Game.Logic
 {
-    public abstract class SmartCollection<T> : IEnumerable<KeyValuePair<int, T>> where T : IIdentifiable
+    public class SmartCollection<T> : IEnumerable<KeyValuePair<int, T>> where T : IIdentifiable
     {
         public int Count { get; protected set; }
 
@@ -40,12 +40,12 @@ namespace GameServer.Game.Logic
             }
         }
 
-        public void Add(T item)
+        public virtual void Add(T item)
         {
             _adds.Enqueue(item);
         }
 
-        public void Remove(int itemId)
+        public virtual void Remove(int itemId)
         {
             _drops.Enqueue(itemId);
         }
@@ -57,7 +57,7 @@ namespace GameServer.Game.Logic
                 yield return dictEnum.Current;
         }
 
-        public void Dispose()
+        public void Clear()
         {
             lock (_dict)
                 _dict.Clear();

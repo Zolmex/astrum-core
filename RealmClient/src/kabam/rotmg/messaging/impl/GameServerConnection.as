@@ -1159,7 +1159,7 @@ public class GameServerConnection {
                     }
                     continue;
                 default:
-                    trace("unhandled stat: " + stat.statType_);
+                    trace("unhandled stat: " + stat.statType_ + " Str: " + stat.strStatValue_ + " Value: " + stat.statValue_);
             }
         }
     }

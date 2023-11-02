@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameServer.Game.Logic.Worlds
+namespace GameServer.Game.Worlds
 {
     public class Realm : World
     {

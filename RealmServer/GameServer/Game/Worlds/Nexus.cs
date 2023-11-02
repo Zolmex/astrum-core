@@ -1,6 +1,7 @@
 ﻿using Common.Resources.Config;
 using Common.Resources.World;
 using Common.Utilities;
+using GameServer.Game.Entities;
 using GameServer.Game.Logic.Entities;
 using System;
 using System.Collections.Generic;
@@ -8,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameServer.Game.Logic.Worlds
+namespace GameServer.Game.Worlds
 {
     public class Nexus : World
     {

@@ -131,11 +131,13 @@ namespace GameServer.Game.Net
                     foreach (var packetKvp in user.Network.Outgoing)
                     {
                         var packet = packetKvp.Value;
-                        var buffer = args.Buffer;
+                        if (packet.PendingCount == 0)
+                            continue;
+
                         // If all of the bytes written were sent, or if there were no bytes written at all, write the pending packets to the buffer
                         if (state.BytesAvailable <= 0)
                         {
-                            var bytes = packet.Write(buffer, state.BytesAvailable);
+                            var bytes = packet.Write(state.Buffer, state.BytesAvailable);
                             if (bytes == 0) // Returns 0 when writing to the buffer failed (not enough space)
                                 continue;
                             //_log.Debug($"SENDING {packet.ID} TO {state.Handler.User.Id}");

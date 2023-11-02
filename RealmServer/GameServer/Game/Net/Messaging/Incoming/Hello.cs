@@ -40,14 +40,24 @@ namespace GameServer.Game.Net.Messaging.Incoming
                 return;
             }
 
-            var acc = DbClient.VerifyAccount(Username, Password, out var status);
+            var acc = user.Account;
+            if (user.State != ConnectionState.Reconnecting)
+            {
+                acc = DbClient.VerifyAccount(Username, Password, out var status);
+                if (acc == null)
+                {
+                    user.SendFailure(Failure.DEFAULT, status.GetDescription());
+                    return;
+                }
+            }
+
             if (acc == null)
             {
-                user.SendFailure(Failure.DEFAULT, status.GetDescription());
+                user.SendFailure(Failure.DEFAULT, "Invalid user state.");
                 return;
             }
 
-            if (acc.AccInUse && user.State != ConnectionState.Reconnecting) // Ignore account in use for users in the reconnecting state
+            if (RealmManager.Users.Get(acc.AccountId) != null && user.State != ConnectionState.Reconnecting)
             {
                 user.SendFailure(Failure.ACCOUNT_IN_USE, "Account in use.");
                 return;

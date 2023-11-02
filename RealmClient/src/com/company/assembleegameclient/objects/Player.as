@@ -586,7 +586,7 @@ public class Player extends Character {
 
     override public function draw(graphicsData:Vector.<IGraphicsData>, camera:Camera, time:int):void {
         super.draw(graphicsData, camera, time);
-        if (this != map_.player_) {
+        if (this != map_.player_ && this.name_ != null && this.name_.length != 0) {
             drawName(graphicsData, camera);
         }
         else if (this.oxygen_ >= 0) {

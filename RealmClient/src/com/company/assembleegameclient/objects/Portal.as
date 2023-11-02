@@ -10,7 +10,7 @@ package com.company.assembleegameclient.objects
    {
        
       
-      public var nexusPortal_:Boolean;
+      public var realmPortal_:Boolean;
       
       public var lockedPortal_:Boolean;
       
@@ -20,14 +20,14 @@ package com.company.assembleegameclient.objects
       {
          super(objectXML);
          isInteractive_ = true;
-         this.nexusPortal_ = objectXML.hasOwnProperty("NexusPortal");
+         this.realmPortal_ = objectXML.hasOwnProperty("RealmPortal");
          this.lockedPortal_ = objectXML.hasOwnProperty("LockedPortal");
       }
       
       override public function draw(graphicsData:Vector.<IGraphicsData>, camera:Camera, time:int) : void
       {
          super.draw(graphicsData,camera,time);
-         if(this.nexusPortal_)
+         if(this.realmPortal_)
          {
             drawName(graphicsData,camera);
          }

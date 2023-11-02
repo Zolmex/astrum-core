@@ -1,5 +1,5 @@
 ﻿using Common;
-using GameServer.Game.Logic.Worlds;
+using GameServer.Game.Entities;
 using GameServer.Game.Net.Messaging;
 using GameServer.Game.Net.Messaging.Outgoing;
 using System;
@@ -40,11 +40,15 @@ namespace GameServer.Game.Logic.Entities
                         Pos = en.Position,
                         Stats = new List<StatData>()
                     };
-                    var statData = new StatData();
-                    statData.Type = type;
-                    statData.SetValue(value);
 
-                    objectStatusData.Stats.Add(statData);
+                    if (type != StatType.None)
+                    {
+                        var statData = new StatData();
+                        statData.Type = type;
+                        statData.SetValue(value);
+
+                        objectStatusData.Stats.Add(statData);
+                    }
                     _entityStatUpdates.TryAdd(en.Id, objectStatusData);
                 }
             }

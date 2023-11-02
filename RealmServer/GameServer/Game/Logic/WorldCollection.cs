@@ -1,6 +1,6 @@
 ﻿using Common.Resources.Xml;
 using Common.Utilities;
-using GameServer.Game.Logic.Worlds;
+using GameServer.Game.Worlds;
 using System;
 using System.Collections.Generic;
 using System.Linq;

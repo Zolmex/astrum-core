@@ -1,7 +1,7 @@
 ﻿using Common.Database;
 using GameServer.Game.Logic;
 using GameServer.Game.Logic.Entities;
-using GameServer.Game.Logic.Worlds;
+using GameServer.Game.Worlds;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,6 +21,7 @@ namespace GameServer.Game
     {
         public readonly User User;
         public World World { get; private set; }
+        public DbChar Char { get; private set; }
         public Player Player { get; private set; }
         public GameState State { get; private set; }
 
@@ -39,6 +40,7 @@ namespace GameServer.Game
         {
             State = GameState.Playing;
 
+            Char = chr;
             Player = new Player(User, chr);
             Player.EnterWorld(world);
         }
@@ -47,11 +49,13 @@ namespace GameServer.Game
         {
             State = GameState.Idle;
 
+            // Don't set char to null, we need that for reconnecting
             Player.LeaveWorld();
         }
 
         public void Reset()
         {
+            Char = null;
             Player = null;
             World = null;
             State = GameState.Idle;

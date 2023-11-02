@@ -5,8 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using GameServer.Game.Logic.Entities;
-using GameServer.Game.Logic.Worlds;
 using GameServer.Game.Net.Messaging.Outgoing;
+using GameServer.Game.Worlds;
 
 namespace GameServer.Game.Net.Messaging.Incoming
 {

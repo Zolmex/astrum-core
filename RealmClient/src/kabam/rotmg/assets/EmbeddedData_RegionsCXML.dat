@@ -94,4 +94,7 @@
 	<Region type="0x1c" id="Store 4">
 		<Color>0xBC8F8F</Color>
 	</Region>
+	<Region type="0x1d" id="Realm Portals">
+		<Color>0xBBFFBB</Color>
+	</Region>
 </Regions>

@@ -182,22 +182,22 @@ public class UadaPongView extends Sprite {
         var horzDist:Number = Math.abs(ball.x - paddle2.x);
         var diff:Number = 0;
 
-        if (horzDist < 750 && horzDist > 550 && ballSpeedX > 0) {
+        /*if (horzDist < 750 && horzDist > 550 && ballSpeedX > 0) {
             if (vertDist < 0) {
                 paddle2.y -= 100 * (dt / 1000.0);
             } else {
                 paddle2.y += 100 * (dt / 1000.0);
             }
-        } else if (horzDist < 550 && ballSpeedX > 0) {
+        } else */if (horzDist < 750 && ballSpeedX > 0) {
             if (predictedY == -1) {
                 predictedY = predictBallLanding(ball.x, ball.y, ballSpeedX, ballSpeedY, paddle2.x);
             }
             diff = predictedY - paddle2y;
 
             if (Math.abs(diff) > 5 && diff < 0) {
-                paddle2.y -= 200 * (dt / 1000.0);
+                paddle2.y -= 300 * (dt / 1000.0);
             } else if (Math.abs(diff) > 5) {
-                paddle2.y += 200 * (dt / 1000.0);
+                paddle2.y += 300 * (dt / 1000.0);
             }
         } else {
             predictedY = -1;

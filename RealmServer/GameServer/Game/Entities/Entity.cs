@@ -12,9 +12,10 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Threading;
-using GameServer.Game.Logic.Worlds;
+using GameServer.Game.Worlds;
+using GameServer.Game.Logic.Entities;
 
-namespace GameServer.Game.Logic.Entities
+namespace GameServer.Game.Entities
 {
     public class Entity : IIdentifiable
     {
@@ -43,7 +44,6 @@ namespace GameServer.Game.Logic.Entities
         public World World { get; private set; }
         public bool Dead { get; private set; }
 
-        protected RealmTime _lastTick;
         protected readonly object _deathLock = new object();
 
         public Entity(ushort type)
@@ -85,6 +85,7 @@ namespace GameServer.Game.Logic.Entities
             World.AddEntity(this);
 
             Tile = world.Map[(int)Position.X, (int)Position.Y];
+            Tile.Chunk.Insert(this);
         }
 
         public virtual void Initialize()
@@ -106,17 +107,18 @@ namespace GameServer.Game.Logic.Entities
             Position.Y = posY;
 
             if (World != null && posX >= 0 && posX < World.Map.Width && posY >= 0 && posY < World.Map.Height)
+            {
+                var oldChunk = Tile?.Chunk;
                 Tile = World.Map[(int)posX, (int)posY];
 
+                if (Tile.Chunk != oldChunk)
+                {
+                    oldChunk?.Remove(this);
+                    Tile.Chunk.Insert(this);
+                }
+            }
+
             Stats.UpdatePosition();
-        }
-
-        public virtual bool Tick(RealmTime time)
-        {
-            if (Dead || _lastTick.TickCount == time.TickCount) // Ensure that ticks only occur once per logic tick
-                return false;
-
-            return true;
         }
 
         public virtual void LeaveWorld()

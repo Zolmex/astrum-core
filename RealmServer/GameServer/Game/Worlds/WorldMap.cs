@@ -1,12 +1,12 @@
 ﻿using Common;
 using Common.Resources.World;
 using Common.Utilities.Net;
-using GameServer.Game.Logic.Entities;
+using GameServer.Game.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace GameServer.Game.Logic.Worlds
+namespace GameServer.Game.Worlds
 {
     public class WorldTile
     {

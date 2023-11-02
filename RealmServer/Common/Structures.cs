@@ -69,11 +69,14 @@ namespace Common
         {
             Pos = pos;
 
-            var stat = new StatData();
-            stat.Type = type;
-            stat.SetValue(value);
+            if (type != StatType.None)
+            {
+                var stat = new StatData();
+                stat.Type = type;
+                stat.SetValue(value);
 
-            Stats.Add(stat);
+                Stats.Add(stat);
+            }
         }
     }
 

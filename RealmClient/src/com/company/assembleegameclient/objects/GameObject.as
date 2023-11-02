@@ -304,10 +304,12 @@ public class GameObject extends BasicObject {
         this.bitmapFill_ = null;
         this.path_.commands = null;
         this.path_.data = null;
-        this.vS_.length = 0;
-        this.uvt_.length = 0;
-        this.vS_ = null;
-        this.uvt_ = null;
+        if (this.vS_ != null) {
+            this.vS_.length = 0;
+            this.uvt_.length = 0;
+            this.vS_ = null;
+            this.uvt_ = null;
+        }
         this.fillMatrix_ = null;
         this.icons_ = null;
         this.iconFills_ = null;

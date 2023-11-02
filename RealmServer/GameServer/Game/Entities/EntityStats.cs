@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameServer.Game.Logic.Entities
+namespace GameServer.Game.Entities
 {
     public class EntityStats
     {
@@ -68,7 +68,11 @@ namespace GameServer.Game.Logic.Entities
                 _updateStatus = false;
 
                 lock (_statsLock)
-                    _objData.Status.Stats = _stats.Select(kvp => new StatData(kvp.Key, kvp.Value)).ToList();
+                {
+                    _objData.Status.Stats.Clear();
+                    foreach (var kvp in _stats)
+                        _objData.Status.Stats.Add(new StatData(kvp.Key, kvp.Value));
+                }
             }
 
             return _objData;

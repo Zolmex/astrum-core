@@ -43,7 +43,6 @@ namespace Common.Database
         public int RegisterTime { get; set; }
         public int[] LockedIds { get; set; }
         public int[] IgnoredIds { get; set; }
-        public bool AccInUse { get; set; }
 
         public DbAccount(int accId)
         {
@@ -70,7 +69,6 @@ namespace Common.Database
             RegisterTime = (int)db.HashGet(key, "registerTime");
             LockedIds = _reader.ReadIntArray(db.HashGet(key, "lockedIds"));
             IgnoredIds = _reader.ReadIntArray(db.HashGet(key, "ignoredIds"));
-            AccInUse = (bool)db.HashGet(key, "accInUse");
         }
 
         public override void Save(ITransaction trans)
@@ -93,7 +91,6 @@ namespace Common.Database
             trans.HashSetAsync(key, "registerTime", RegisterTime);
             trans.HashSetAsync(key, "lockedIds", _writer.Write(LockedIds));
             trans.HashSetAsync(key, "ignoredIds", _writer.Write(IgnoredIds));
-            trans.HashSetAsync(key, "accInUse", AccInUse);
         }
 
         public XElement ToXml()

@@ -1,16 +1,19 @@
 ﻿using Common;
 using Common.Resources.World;
 using Common.Utilities;
+using GameServer.Game.Entities;
+using GameServer.Game.Logic;
 using GameServer.Game.Logic.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
 
-namespace GameServer.Game.Logic.Worlds
+namespace GameServer.Game.Worlds
 {
     public class World : IIdentifiable
     {
@@ -32,7 +35,10 @@ namespace GameServer.Game.Logic.Worlds
         private static int _nextWorldId;
 
         public readonly EntityCollection Entities; // Complete list of entities in this world
+        public readonly CharacterCollection Characters;
         public readonly PlayerCollection Players;
+        public readonly SmartCollection<Entity> ActiveEntities;
+
         protected readonly Logger _log;
 
         private long _startTime;
@@ -46,8 +52,10 @@ namespace GameServer.Game.Logic.Worlds
             MapId = mapId;
             Config = WorldLibrary.WorldConfigs[name];
 
-            Entities = new EntityCollection(Id);
+            Entities = new EntityCollection();
+            Characters = new CharacterCollection();
             Players = new PlayerCollection();
+            ActiveEntities = new SmartCollection<Entity>();
         }
 
         public virtual void Initialize()
@@ -79,6 +87,9 @@ namespace GameServer.Game.Logic.Worlds
         {
             Entities.Add(en);
 
+            if (en is Character chr)
+                Characters.Add(chr);
+
             if (en is Player player)
                 Players.Add(player);
         }
@@ -88,6 +99,9 @@ namespace GameServer.Game.Logic.Worlds
             var entityId = en.Id;
             Entities.Remove(entityId);
 
+            if (en is Character)
+                Characters.Remove(entityId);
+
             if (en is Player)
                 Players.Remove(entityId);
         }
@@ -95,45 +109,70 @@ namespace GameServer.Game.Logic.Worlds
         public void Update() // Different from Tick, synchronizes collections and other stuff maybe
         {
             Entities.Update();
+            Characters.Update();
             Players.Update();
         }
 
         public void Tick(RealmTime time)
         {
             if (Deleted)
-                return;
+            {
+                foreach (var kvp in Entities)
+                    kvp.Value.LeaveWorld();
 
-            if (!Config.LongLasting && Players.Count == 0 && (time.TotalElapsedMs - _startTime) > 60000)
+                Update(); // Perform one last time
+
+                RealmManager.RemoveWorld(Id);
+                return;
+            }
+
+            if (!Config.LongLasting && Players.Count == 0 && time.TotalElapsedMs - _startTime > 60000)
             {
                 Delete();
                 return;
             }
 
-            Parallel.ForEach(Entities, kvp => // Later try with custom .Where implementation
+            for (var cY = 0; cY < Map.Chunks.Height; cY++)
+                for (var cX = 0; cX < Map.Chunks.Width; cX++)
+                {
+                    var chunk = Map.Chunks[cX, cY];
+                    if (chunk.Activity == 0)
+                        continue;
+
+                    lock (chunk.Entities)
+                        foreach (var en in chunk.Entities)
+                            if (!en.Dead) // Here we put into a list the entities that belong to active chunks
+                            {
+                                ActiveEntities.Add(en);
+                                if (en is Character chr && en is not Player)
+                                    chr.Tick(time);
+                            }
+                }
+
+            ActiveEntities.Update();
+
+            Parallel.ForEach(Players, kvp => // Players are ticked after to ensure that the active entities list is complete
             {
-                var en = kvp.Value;
-                if (!en.Dead && en.Tile?.Chunk?.Activity > 0)
-                    en.Tick(time);
+                var plr = kvp.Value;
+                if (!plr.Dead)
+                    plr.Tick(time);
             });
+
+            ActiveEntities.Clear();
         }
 
         public void Delete()
         {
-            Deleted = true;
-
-            foreach (var kvp in Entities)
-                kvp.Value.LeaveWorld();
-
-            Update(); // Perform one last time
-
-            RealmManager.RemoveWorld(Id);
+            Deleted = true; // The actual deletion of the world is performed in Tick
         }
 
         public void Dispose()
         {
             Disposed = true;
-            Entities.Dispose();
-            Players.Dispose();
+            ActiveEntities.Clear();
+            Entities.Clear();
+            Characters.Clear();
+            Players.Clear();
         }
     }
 }

@@ -3,8 +3,8 @@ using Common.Utilities.Net;
 using Common.Utilities;
 using System;
 using System.IO;
-using GameServer.Game.Logic.Worlds;
 using System.Collections.Generic;
+using GameServer.Game.Worlds;
 
 namespace GameServer.Game.Net.Messaging.Outgoing
 {

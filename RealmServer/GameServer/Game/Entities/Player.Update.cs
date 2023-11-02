@@ -1,8 +1,9 @@
 ﻿using Common;
 using Common.Utilities;
-using GameServer.Game.Logic.Worlds;
+using GameServer.Game.Entities;
 using GameServer.Game.Net.Messaging;
 using GameServer.Game.Net.Messaging.Outgoing;
+using GameServer.Game.Worlds;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -97,24 +98,27 @@ namespace GameServer.Game.Logic.Entities
 
         public void GetEntities()
         {
-            foreach (var kvp in World.Entities)
+            foreach (var kvp in World.ActiveEntities)
             {
                 var en = kvp.Value;
-                var old = _visibleEntities.Contains(en);
                 var visible = IsEntityVisible(en);
-                if (visible && !old)
+                if (visible && _visibleEntities.Add(en))
                 {
                     en.DeathEvent += HandleEntityDeath;
                     en.Stats.StatChangedEvent += HandleEntityStatChanged;
                     _newEntities.Add(en.Stats.GetObjectData());
-                    _visibleEntities.Add(en);
                 }
-                if (!visible && old)
+                if (!visible)
                 {
-                    en.DeathEvent -= HandleEntityDeath;
-                    en.Stats.StatChangedEvent -= HandleEntityStatChanged;
-                    _oldEntities.Add(en.Stats.GetObjectDropData());
-                    _visibleEntities.Remove(en);
+                    if (_visibleEntities.Add(en))
+                        _visibleEntities.Remove(en);
+                    else
+                    {
+                        en.DeathEvent -= HandleEntityDeath;
+                        en.Stats.StatChangedEvent -= HandleEntityStatChanged;
+                        _oldEntities.Add(en.Stats.GetObjectDropData());
+                        _visibleEntities.Remove(en);
+                    }
                 }
             }
 

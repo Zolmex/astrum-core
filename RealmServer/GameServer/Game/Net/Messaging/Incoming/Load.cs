@@ -21,22 +21,30 @@ namespace GameServer.Game.Net.Messaging.Incoming
 
         protected override void Handle(User user)
         {
-            var chr = DbClient.GetChar(user.Account.AccountId, CharId);
-            if (chr == null)
+            var chr = user.GameInfo.Char;
+            if (user.State != ConnectionState.Reconnecting)
             {
-                user.SendFailure(Failure.DEFAULT, "Failed to load character.");
-                return;
-            }
-            else
-            {
-                var world = user.GameInfo.World;
-                if (world == null || world.Deleted)
+                chr = DbClient.GetChar(user.Account.AccountId, CharId);
+                if (chr == null)
                 {
-                    user.SendFailure(Failure.DEFAULT, "World does not exist.");
+                    user.SendFailure(Failure.DEFAULT, "Failed to load character.");
                     return;
                 }
-                user.Load(chr, world);
             }
+
+            if (chr == null)
+            {
+                user.SendFailure(Failure.DEFAULT, "Invalid reconnect state.");
+                return;
+            }
+
+            var world = user.GameInfo.World;
+            if (world == null || world.Deleted)
+            {
+                user.SendFailure(Failure.DEFAULT, "World does not exist.");
+                return;
+            }
+            user.Load(chr, world);
         }
 
         public override string ToString()

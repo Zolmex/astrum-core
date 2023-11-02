@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Threading;
 using System.IO;
-using GameServer.Game.Logic.Worlds;
 using GameServer.Game.Logic.Entities;
 using GameServer.Game.Logic;
+using GameServer.Game.Worlds;
 
 namespace GameServer.Game
 {
@@ -67,12 +67,11 @@ namespace GameServer.Game
         public void SetGameInfo(DbAccount acc, uint randomSeed, World world)
         {
             Account = acc;
+            RealmManager.Users.SetAccId(this, acc.AccountId);
+
             Random = new ClientRandom(randomSeed);
 
             GameInfo.SetWorld(world);
-            DbClient.AccInUse(acc, true);
-
-            State = ConnectionState.Ready;
         }
 
         public void Load(DbChar chr, World world)
@@ -88,6 +87,8 @@ namespace GameServer.Game
             SendPacket(PacketId.ACCOUNTLIST, AccountList.Write(this,
                 AccountList.Ignored,
                 Account.IgnoredIds ?? new int[0]));
+
+            State = ConnectionState.Ready;
         }
 
         private void Unload()
@@ -137,7 +138,6 @@ namespace GameServer.Game
                 State = ConnectionState.Disconnected;
 
                 Unload();
-                DbClient.AccInUse(Account, false);
 
                 RealmManager.DisconnectUser(this);
                 SocketServer.DisconnectUser(this);

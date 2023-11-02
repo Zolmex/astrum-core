@@ -1,17 +1,17 @@
 ﻿using Common.Resources.World;
 using Common.Resources.Xml;
-using GameServer.Game.Logic.Worlds;
 using GameServer.Game.Net.Messaging;
 using GameServer.Game.Net.Messaging.Outgoing;
+using GameServer.Game.Worlds;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameServer.Game.Logic.Entities
+namespace GameServer.Game.Entities
 {
-    public class Portal : Entity
+    public class Portal : Character
     {
         public readonly World PortalWorld;
 

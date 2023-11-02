@@ -2,6 +2,7 @@
 using Common.Database;
 using Common.Resources.World;
 using Common.Utilities;
+using GameServer.Game.Entities;
 using GameServer.Game.Net.Messaging;
 using GameServer.Game.Net.Messaging.Outgoing;
 using System;
@@ -13,7 +14,7 @@ using System.Threading.Tasks;
 
 namespace GameServer.Game.Logic.Entities
 {
-    public partial class Player : Entity
+    public partial class Player : Character
     {
         public User User { get; }
         public DbChar Char { get; }

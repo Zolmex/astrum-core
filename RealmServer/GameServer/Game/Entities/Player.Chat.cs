@@ -1,7 +1,7 @@
 ﻿using Common;
 using Common.Database;
 using GameServer.Game.Chat.Commands;
-using GameServer.Game.Logic.Worlds;
+using GameServer.Game.Entities;
 using GameServer.Game.Net.Messaging;
 using GameServer.Game.Net.Messaging.Outgoing;
 using System;

@@ -26,7 +26,7 @@ namespace GameServer.Game.Net.Messaging
         public readonly NetworkWriter Writer;
         private readonly MemoryStream _stream = new MemoryStream();
         private readonly ConcurrentQueue<StreamWriteInfo> _pending = new ConcurrentQueue<StreamWriteInfo>();
-        private int _pendingCount;
+        public int PendingCount;
 
         public OutgoingPacket()
         {
@@ -35,14 +35,14 @@ namespace GameServer.Game.Net.Messaging
 
         public void AddPending(StreamWriteInfo writeInfo)
         {
-            Interlocked.Increment(ref _pendingCount);
+            Interlocked.Increment(ref PendingCount);
             _pending.Enqueue(writeInfo);
         }
 
         public int Write(byte[] buff, int offset)
         {
             // Get body
-            if (_pendingCount == 0)
+            if (PendingCount == 0)
                 return 0;
 
             var totalLength = 0;
@@ -67,7 +67,7 @@ namespace GameServer.Game.Net.Messaging
                     Buffer.BlockCopy(BitConverter.GetBytes(IPAddress.HostToNetworkOrder(packetLength)), 0, buff, offset, 4);
 
                     // Reset the network stream if the list is empty
-                    if (Interlocked.Decrement(ref _pendingCount) == 0)
+                    if (Interlocked.Decrement(ref PendingCount) == 0)
                         _stream.SetLength(0);
                 }
 
