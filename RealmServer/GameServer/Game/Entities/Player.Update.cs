@@ -12,7 +12,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameServer.Game.Logic.Entities
+namespace GameServer.Game.Entities
 {
     public partial class Player
     {

@@ -7,7 +7,7 @@ using System;
 using System.Text;
 using StackExchange.Redis;
 using Common.Database;
-using GameServer.Game.Logic;
+using GameServer.Game.Collections;
 
 namespace GameServer.Game.Net.Messaging.Incoming
 {

@@ -8,8 +8,7 @@ using System.Threading.Tasks;
 using System.Net.Sockets;
 using System.Threading;
 using System.IO;
-using GameServer.Game.Logic.Entities;
-using GameServer.Game.Logic;
+using GameServer.Game.Collections;
 using GameServer.Game.Worlds;
 
 namespace GameServer.Game

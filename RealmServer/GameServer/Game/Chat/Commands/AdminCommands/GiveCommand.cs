@@ -1,6 +1,6 @@
 ﻿using Common.Resources.Xml;
 using GameServer.Game.Chat.Commands;
-using GameServer.Game.Logic.Entities;
+using GameServer.Game.Entities;
 using Pipelines.Sockets.Unofficial.Arenas;
 using System;
 using System.Collections.Generic;

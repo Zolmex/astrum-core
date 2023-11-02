@@ -6,7 +6,7 @@ using Common.Resources.World;
 using Common.Resources.Xml;
 using Common.Utilities;
 using GameServer.Game;
-using GameServer.Game.Logic;
+using GameServer.Game.Collections;
 using GameServer.Game.Net;
 using System;
 using System.Diagnostics;

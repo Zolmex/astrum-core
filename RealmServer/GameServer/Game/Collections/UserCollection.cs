@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameServer.Game.Logic
+namespace GameServer.Game.Collections
 {
     public class UserCollection : SmartCollection<User>
     {

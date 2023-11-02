@@ -1,6 +1,6 @@
 ﻿using Common.Database;
-using GameServer.Game.Logic;
-using GameServer.Game.Logic.Entities;
+using GameServer.Game.Collections;
+using GameServer.Game.Entities;
 using GameServer.Game.Worlds;
 using System;
 using System.Collections.Generic;

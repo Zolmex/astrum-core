@@ -1,7 +1,7 @@
 ﻿using Common.Utilities;
 using GameServer.Game.Chat;
 using GameServer.Game.Chat.Commands;
-using GameServer.Game.Logic;
+using GameServer.Game.Collections;
 using GameServer.Game.Worlds;
 using System;
 using System.Collections.Concurrent;

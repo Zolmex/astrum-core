@@ -7,7 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace GameServer.Game.Logic
+namespace GameServer.Game.Collections
 {
     public class SmartCollection<T> : IEnumerable<KeyValuePair<int, T>> where T : IIdentifiable
     {

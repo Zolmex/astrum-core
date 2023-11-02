@@ -2,8 +2,7 @@
 using Common.Resources.World;
 using Common.Utilities;
 using GameServer.Game.Entities;
-using GameServer.Game.Logic;
-using GameServer.Game.Logic.Entities;
+using GameServer.Game.Collections;
 using System;
 using System.Collections.Generic;
 using System.Linq;

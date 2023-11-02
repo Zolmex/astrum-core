@@ -1,5 +1,5 @@
 ﻿using Common.Utilities;
-using GameServer.Game.Logic.Entities;
+using GameServer.Game.Entities;
 using GameServer.Game.Worlds;
 using System;
 using System.Collections.Generic;

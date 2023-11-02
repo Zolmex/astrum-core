@@ -13,7 +13,6 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Threading;
 using GameServer.Game.Worlds;
-using GameServer.Game.Logic.Entities;
 
 namespace GameServer.Game.Entities
 {

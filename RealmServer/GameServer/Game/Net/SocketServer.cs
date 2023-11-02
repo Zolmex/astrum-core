@@ -11,7 +11,7 @@ using System;
 using Microsoft.VisualBasic;
 using System.Collections.Generic;
 using Common.Resources.Config;
-using GameServer.Game.Logic;
+using GameServer.Game.Collections;
 
 namespace GameServer.Game.Net
 {

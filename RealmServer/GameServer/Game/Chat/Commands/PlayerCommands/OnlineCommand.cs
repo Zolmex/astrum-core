@@ -1,4 +1,4 @@
-﻿using GameServer.Game.Logic.Entities;
+﻿using GameServer.Game.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
