@@ -38,7 +38,7 @@ namespace Common.Resources.World
             foreach (string mapName in config.Maps)
             {
                 var data = File.ReadAllBytes(GameServerConfig.Config.WorldsDir + mapName);
-                list.Add(new MapData(data, mapName.EndsWith(".wmap")));
+                list.Add(new MapData(data, mapName));
             }
             return list.ToArray();
         }

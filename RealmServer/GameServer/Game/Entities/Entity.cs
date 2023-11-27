@@ -23,14 +23,6 @@ namespace GameServer.Game.Entities
         protected readonly Logger _log;
         private static int _nextEntityId;
 
-        public int Id { get; set; }
-        public ObjectDesc Desc { get; }
-        public EntityStats Stats { get; }
-
-        public WorldTile Tile;
-        public WorldPosData Position;
-        public event Action<Entity> DeathEvent;
-
         #region STATS
 
         public string Name { get => Stats.Get<string>(StatType.Name); set => Stats.Set(StatType.Name, value); }
@@ -40,9 +32,16 @@ namespace GameServer.Game.Entities
 
         #endregion
 
+        public int Id { get; set; }
+        public ObjectDesc Desc { get; }
+        public EntityStats Stats { get; }
+        public WorldTile Tile { get; private set; }
         public World World { get; private set; }
         public bool Dead { get; private set; }
 
+        public WorldPosData Position;
+        public readonly bool IsPlayer;
+        public event Action<Entity> DeathEvent;
         protected readonly object _deathLock = new object();
 
         public Entity(ushort type)
@@ -51,6 +50,7 @@ namespace GameServer.Game.Entities
 
             Id = Interlocked.Increment(ref _nextEntityId);
             Desc = XmlLibrary.ObjectDescs[type];
+            IsPlayer = Desc.Class == "Player";
             Stats = new EntityStats(this);
         }
 
@@ -66,6 +66,10 @@ namespace GameServer.Game.Entities
                         if (dungeonName != null)
                             return new Portal(objType);
                         break;
+                    case "Character":
+                        if (desc.Enemy)
+                            return new Enemy(objType);
+                        return new Character(objType);
                 }
             //if (desc.ConnectedWall || desc.CaveWall)
             //    return new ConnectedObject(objType);

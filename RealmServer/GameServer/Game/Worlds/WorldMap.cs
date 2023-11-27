@@ -1,5 +1,6 @@
 ﻿using Common;
 using Common.Resources.World;
+using Common.Resources.Xml;
 using Common.Utilities.Net;
 using GameServer.Game.Entities;
 using System;
@@ -10,11 +11,13 @@ namespace GameServer.Game.Worlds
 {
     public class WorldTile
     {
+        public readonly TileDesc TileDesc;
+        public readonly MapTileData Data;
         public int X { get; }
         public int Y { get; }
-        public ushort GroundType { get; }
-        public ushort ObjectType { get; }
-        public TileRegion Region { get; }
+        public ushort GroundType { get; private set; }
+        public ushort ObjectType { get; private set; }
+        public TileRegion Region { get; private set; }
         public Entity Object { get; set; }
         public bool BlocksSight { get; set; }
         public MapChunk Chunk { get; set; }
@@ -22,12 +25,22 @@ namespace GameServer.Game.Worlds
 
         public WorldTile(MapTileData tile, int x, int y, MapChunk chunk)
         {
+            TileDesc = XmlLibrary.TileDescs[tile.GroundType];
+
+            Data = tile;
             X = x;
             Y = y;
             Chunk = chunk;
             GroundType = tile.GroundType;
             ObjectType = tile.ObjectType;
             Region = tile.Region;
+        }
+
+        public void Update(MapTileData newTile)
+        {
+            GroundType = newTile.GroundType;
+            ObjectType = newTile.ObjectType;
+            Region = newTile.Region;
         }
 
         public void Write(NetworkWriter wtr)
@@ -66,8 +79,8 @@ namespace GameServer.Game.Worlds
             for (int y = 0; y < Height; y++)
                 for (int x = 0; x < Width; x++)
                 {
-                    var cX = (int)Math.Ceiling(x / ChunkMap.CHUNK_SIZE);
-                    var cY = (int)Math.Ceiling(y / ChunkMap.CHUNK_SIZE);
+                    var cX = (int)(x / ChunkMap.CHUNK_SIZE);
+                    var cY = (int)(y / ChunkMap.CHUNK_SIZE);
                     var chunk = Chunks[cX, cY];
                     var js = map.Tiles[x, y];
                     var tile = Tiles[x, y] = new WorldTile(js, x, y, chunk);
@@ -91,6 +104,11 @@ namespace GameServer.Game.Worlds
                         Regions[pos] = tile.Region;
                     }
                 }
+        }
+
+        public bool Contains(int x, int y)
+        {
+            return !(x < 0 || y < 0 || x >= Width || y >= Height);
         }
     }
 }

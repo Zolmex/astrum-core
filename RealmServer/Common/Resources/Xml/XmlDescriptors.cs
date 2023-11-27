@@ -56,6 +56,10 @@ namespace Common.Resources.Xml
         public readonly StateDesc BehaviorState;
         public readonly bool ActiveBehavior;
 
+        public readonly float SpawnProb;
+        public readonly SpawnDesc Spawn;
+        public readonly TerrainType Terrain;
+
         public ObjectDesc(XElement e, string id, ushort type)
         {
             XML = e;
@@ -103,12 +107,33 @@ namespace Common.Resources.Xml
             foreach (XElement k in e.Elements("Projectile"))
             {
                 ProjectileDesc desc = new ProjectileDesc(k, ObjectType);
-                Projectiles[desc.BulletType] = desc;
+                Projectiles[desc.BulletId] = desc;
             }
 
             BehaviorState = e.HasElement("State") ? new StateDesc(e.Element("State")) : null;
             LootTable = e.HasElement("LootTable") ? new LootTableDesc(e.Element("LootTable")) : null;
             ActiveBehavior = e.HasElement("ActiveBehavior");
+
+            SpawnProb = e.GetValue<float>("SpawnProb", 1);
+            Spawn = e.HasElement("Spawn") ? new SpawnDesc(e.Element("Spawn")) : null;
+            var terrainValue = e.GetValue<string>("Terrain");
+            Terrain = terrainValue == null ? TerrainType.None : Enum.Parse<TerrainType>(terrainValue);
+        }
+    }
+
+    public class SpawnDesc
+    {
+        public readonly int Max;
+        public readonly int Mean;
+        public readonly int Min;
+        public readonly int Deviation;
+
+        public SpawnDesc(XElement e)
+        {
+            Mean = e.GetValue<int>("Mean");
+            Deviation = e.GetValue<int>("StdDev");
+            Min = e.GetValue<int>("Min");
+            Max = e.GetValue<int>("Max");
         }
     }
 
@@ -174,22 +199,18 @@ namespace Common.Resources.Xml
         }
     }
 
-    [DataContract]
     public class ActivateEffectDesc
     {
         public readonly ActivateEffectIndex Index;
         public readonly ConditionEffectDesc[] Effects;
         public readonly ConditionEffectIndex Effect;
-        [DataMember] public int DurationMS;
-        [DataMember] public float Range;
-        [DataMember] public int Amount;
-        [DataMember] public int TotalDamage;
-        [DataMember] public float Radius;
-        [DataMember] public uint? Color;
-        [DataMember] public int MaxTargets;
-
-        [JsonConstructor]
-        public ActivateEffectDesc() { }
+        public int DurationMS;
+        public float Range;
+        public int Amount;
+        public int TotalDamage;
+        public float Radius;
+        public uint? Color;
+        public int MaxTargets;
 
         public ActivateEffectDesc(XElement e)
         {
@@ -211,7 +232,6 @@ namespace Common.Resources.Xml
         }
     }
 
-    [DataContract]
     public class Item
     {
         public static readonly JsonSerializerSettings SerializeSettings = new JsonSerializerSettings()
@@ -220,6 +240,7 @@ namespace Common.Resources.Xml
             NullValueHandling = NullValueHandling.Ignore
         };
 
+        public string DisplayName => DisplayId ?? ObjectId;
         public readonly XElement Root;
         public readonly string ObjectId;
         public readonly ushort ObjectType;
@@ -231,29 +252,24 @@ namespace Common.Resources.Xml
         public readonly bool Soulbound;
         public readonly int Tex1;
         public readonly int Tex2;
-
-        public string DisplayName => DisplayId ?? ObjectId;
-        [DataMember] public int Tier { get => GetValue<int>("Tier"); set => SetValue("Tier", value); }
-        [DataMember] public string Description { get => GetValue<string>("Description"); set => SetValue("Description", value); }
-        [DataMember] public float RateOfFire { get => GetValue<float>("RateOfFire"); set => SetValue("RateOfFire", value); }
-        [DataMember] public int MpCost { get => GetValue<int>("MpCost"); set => SetValue("MpCost", value); }
-        [DataMember] public int FameBonus { get => GetValue<int>("FameBonus"); set => SetValue("FameBonus", value); }
-        [DataMember] public byte NumProjectiles { get => GetValue<byte>("NumProjectiles"); set => SetValue("NumProjectiles", value); }
-        [DataMember] public float ArcGap { get => GetValue<float>("ArcGap"); set => SetValue("ArcGap", value); }
-        [DataMember] public string DisplayId { get => GetValue<string>("DisplayId"); set => SetValue("DisplayId", value); }
-        [DataMember] public int Cooldown { get => GetValue<int>("Cooldown"); set => SetValue("Cooldown", value); }
-        [DataMember] public bool Resurrects { get => GetValue<bool>("Resurrects"); set => SetValue("Resurrects", value); }
-        [DataMember] public int Doses { get => GetValue<int>("Doses"); set => SetValue("Doses", value); }
-        [DataMember] public int MaxDoses { get => GetValue<int>("MaxDoses"); set => SetValue("MaxDoses", value); }
-        [DataMember] public KeyValuePair<int, int>[] StatBoosts { get => GetValue<KeyValuePair<int, int>[]>("StatBoosts"); set => SetValue("StatBoosts", value); }
-        [DataMember] public ActivateEffectDesc[] ActivateEffects { get => GetValue<ActivateEffectDesc[]>("ActivateEffects"); set => SetValue("ActivateEffects", value); }
-        [DataMember] public ProjectileDesc Projectile { get => GetValue<ProjectileDesc>("Projectile"); set => SetValue("Projectile", value); }
+        public readonly int Tier;
+        public readonly string Description;
+        public readonly float RateOfFire;
+        public readonly int MpCost;
+        public readonly int FameBonus;
+        public readonly byte NumProjectiles;
+        public readonly float ArcGap;
+        public readonly string DisplayId;
+        public readonly int Cooldown;
+        public readonly bool Resurrects;
+        public readonly int Doses;
+        public readonly int MaxDoses;
+        public readonly KeyValuePair<int, int>[] StatBoosts;
+        public readonly ActivateEffectDesc[] ActivateEffects;
+        public readonly ProjectileDesc Projectile;
 
         private readonly Dictionary<string, object> _original = new Dictionary<string, object>();
         private readonly Dictionary<string, object> _changed = new Dictionary<string, object>();
-
-        [JsonConstructor]
-        public Item() { }
 
         public Item(XElement e, string id, ushort type)
         {
@@ -289,87 +305,12 @@ namespace Common.Resources.Xml
                 .ToArray();
             Projectile = e.HasElement("Projectile") ? new ProjectileDesc(e.Element("Projectile"), ObjectType) : null;
         }
-
-        private T GetValue<T>(string key, T def = default)
-        {
-            if (_changed.TryGetValue(key, out var value))
-                return (T)(value ?? def);
-            if (_original.TryGetValue(key, out value))
-                return (T)(value ?? def);
-            return def;
-        }
-
-        private void SetValue(string key, object value)
-        {
-            if (!_original.ContainsKey(key))
-                _original[key] = value;
-            else _changed[key] = value;
-        }
-
-        public static Item Import(Item desc, string json)
-        {
-            var ret = new Item(desc.Root, desc.ObjectId, desc.ObjectType);
-            var itemData = JsonConvert.DeserializeObject<Item>(json, SerializeSettings);
-            var props = typeof(Item).GetProperties();
-            for (var i = 0; i < props.Length; i++)
-            {
-                var prop = props[i];
-                if (prop.CanWrite)
-                {
-                    var value = prop.GetValue(itemData);
-                    if (!Utils.IsDefaultValue(prop.PropertyType, value))
-                        prop.SetValue(ret, value);
-                }
-            }
-            return ret;
-        }
-
-        public string Export()
-        {
-            if (!_changed.Any())
-                return null;
-
-            var clone = Clone();
-            var props = GetType().GetProperties();
-            for (var i = 0; i < props.Length; i++)
-            {
-                var prop = props[i];
-                if (prop.CanWrite)
-                {
-                    object value = null;
-                    if (_changed.ContainsKey(prop.Name))
-                        value = _changed[prop.Name];
-                    prop.SetValue(clone, value);
-                }
-            }
-            var ret = JsonConvert.SerializeObject(clone, SerializeSettings);
-            return ret;
-        }
-
-        public Item Clone()
-            => new Item(Root, ObjectId, ObjectType);
-
-        public static bool TypeEquals(int slotType, ItemType itemType)
-        {
-            switch (itemType)
-            {
-                case ItemType.All: return true;
-                case ItemType.Weapon:
-                    return slotType == 1 || slotType == 2 || slotType == 3 || slotType == 8 || slotType == 17 || slotType == 24;
-                case ItemType.Ability:
-                    return slotType == 4 || slotType == 5 || slotType == 11 || slotType == 12 || slotType == 13 || slotType == 15 || slotType == 16 || slotType == 18 || slotType == 19 || slotType == 20 || slotType == 21 || slotType == 22 || slotType == 23 || slotType == 25;
-                case ItemType.Armor:
-                    return slotType == 6 || slotType == 7 || slotType == 14;
-                default:
-                    return slotType == (int)itemType;
-            }
-        }
     }
 
     public class TileDesc
     {
         public readonly string ObjectId;
-        public readonly ushort ObjectType;
+        public readonly ushort GroundType;
         public readonly bool NoWalk;
         public readonly int Damage;
         public readonly float Speed;
@@ -381,7 +322,7 @@ namespace Common.Resources.Xml
         public TileDesc(XElement e, string id, ushort type)
         {
             ObjectId = id;
-            ObjectType = type;
+            GroundType = type;
             NoWalk = e.HasElement("NoWalk");
             Damage = e.GetValue<int>("Damage");
             Speed = e.GetValue<float>("Speed", 1.0f);
@@ -394,39 +335,35 @@ namespace Common.Resources.Xml
         }
     }
 
-    [DataContract]
     public class ProjectileDesc
     {
         public readonly ushort ContainerType;
-        public readonly byte BulletType;
+        public readonly byte BulletId;
         public readonly string ObjectId;
-        [DataMember] public int LifetimeMS;
-        [DataMember] public float Speed;
+        public int LifetimeMS;
+        public float Speed;
 
-        [DataMember] public int Damage;
-        [DataMember] public int MinDamage;
-        [DataMember] public int MaxDamage;
+        public int Damage;
+        public int MinDamage;
+        public int MaxDamage;
 
         public readonly ConditionEffectDesc[] Effects;
 
-        [DataMember] public bool MultiHit;
-        [DataMember] public bool PassesCover;
-        [DataMember] public bool ArmorPiercing;
-        [DataMember] public bool Wavy;
-        [DataMember] public bool Parametric;
-        [DataMember] public bool Boomerang;
+        public bool MultiHit;
+        public bool PassesCover;
+        public bool ArmorPiercing;
+        public bool Wavy;
+        public bool Parametric;
+        public bool Boomerang;
 
-        [DataMember] public float Amplitude;
-        [DataMember] public float Frequency;
-        [DataMember] public float Magnitude;
-
-        [JsonConstructor]
-        public ProjectileDesc() { }
+        public float Amplitude;
+        public float Frequency;
+        public float Magnitude;
 
         public ProjectileDesc(XElement e, ushort containerType)
         {
             ContainerType = containerType;
-            BulletType = (byte)e.GetAttribute<int>("id");
+            BulletId = (byte)e.GetAttribute<int>("id");
             ObjectId = e.GetValue<string>("ObjectId");
             LifetimeMS = e.GetValue<int>("LifetimeMS");
             Speed = e.GetValue<float>("Speed");

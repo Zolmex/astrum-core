@@ -7,7 +7,7 @@ using Common.Resources.Xml;
 using Common.Utilities;
 using GameServer.Game;
 using GameServer.Game.Collections;
-using GameServer.Game.Net;
+using GameServer.Game.Network;
 using System;
 using System.Diagnostics;
 using System.Globalization;

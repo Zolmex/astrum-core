@@ -1,4 +1,5 @@
 ﻿using Common.Resources.Xml;
+using Common.Utilities;
 using Common.Utilities.Net;
 using Ionic.Zlib;
 using Newtonsoft.Json;
@@ -42,7 +43,9 @@ namespace Common.Resources.World
         Store_2,
         Store_3,
         Store_4,
-        Realm_Portals
+        Realm_Portals,
+        Vault,
+        Gifting_Chest
     }
 
     public struct json_dat
@@ -82,13 +85,16 @@ namespace Common.Resources.World
     // https://github.com/dhojka7/realm-server/blob/456166cbd3c43ade24df8f7904db1f7863e4ebde/Game/JSMap.cs#L55
     public class MapData
     {
+        private readonly Logger _log = new Logger(typeof(MapData));
+
         public MapTileData[,] Tiles;
         public int Width;
         public int Height;
         public Dictionary<TileRegion, List<IntPoint>> Regions;
 
-        public MapData(byte[] data, bool wmap)
+        public MapData(byte[] data, string mapName)
         {
+            bool wmap = mapName.EndsWith(".wmap");
             if (wmap)
             {
                 LoadWMap(data);
@@ -105,12 +111,21 @@ namespace Common.Resources.World
             for (int i = 0; i < json.dict.Length; i++)
             {
                 loc o = json.dict[i];
+
+                TileRegion region = TileRegion.None;
+                if (o.regions != null)
+                {
+                    var regionSuccess = Enum.TryParse(o.regions[0].id.Replace(' ', '_'), out region);
+                    if (!regionSuccess)
+                        _log.Warn($"Map region unknown. Map name: {mapName} Region: {o.regions[0].id}");
+                }
+
                 dict[(ushort)i] = new MapTileData
                 {
-                    GroundType = o.ground == null ? (ushort)255 : XmlLibrary.Id2Tile(o.ground).ObjectType,
-                    ObjectType = o.objs == null ? (ushort)255 : XmlLibrary.Id2Object(o.objs[0].id).ObjectType,
+                    GroundType = o.ground == null ? (ushort)255 : XmlLibrary.Id2Tile(o.ground)?.GroundType ?? 0,
+                    ObjectType = o.objs == null ? (ushort)255 : XmlLibrary.Id2Object(o.objs[0].id)?.ObjectType ?? 0,
                     Key = o.objs?[0].name,
-                    Region = o.regions == null ? TileRegion.None : (TileRegion)Enum.Parse(typeof(TileRegion), o.regions[0].id.Replace(' ', '_'))
+                    Region = region
                 };
             }
 
@@ -124,9 +139,9 @@ namespace Common.Resources.World
                 for (int y = 0; y < json.height; y++)
                     if (tiles[x, y].ObjectType != 255)
                     {
-                        ObjectDesc desc = XmlLibrary.ObjectDescs[tiles[x, y].ObjectType];
-                        if ((desc.CaveWall || desc.ConnectedWall) && tiles[x, y].GroundType == 255)
-                            tiles[x, y].GroundType = 0xfd;
+                        if (XmlLibrary.ObjectDescs.TryGetValue(tiles[x, y].ObjectType, out var desc))
+                            if ((desc.CaveWall || desc.ConnectedWall) && tiles[x, y].GroundType == 255)
+                                tiles[x, y].GroundType = 0xfd;
                     }
 
             Tiles = tiles;

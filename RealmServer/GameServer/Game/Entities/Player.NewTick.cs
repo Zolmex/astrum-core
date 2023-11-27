@@ -1,7 +1,7 @@
 ﻿using Common;
 using GameServer.Game.Entities;
-using GameServer.Game.Net.Messaging;
-using GameServer.Game.Net.Messaging.Outgoing;
+using GameServer.Game.Network.Messaging;
+using GameServer.Game.Network.Messaging.Outgoing;
 using System;
 using System.Collections.Generic;
 using System.Linq;

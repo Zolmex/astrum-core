@@ -1,0 +1,10 @@
+﻿{
+  "Id": 0,
+  "Name": "UndeadLair",
+  "DisplayName": "Undead Lair",
+  "Difficulty": 4,
+  "MaxPlayers": -1,
+  "Blocksight": 0,
+  "LongLasting": false,
+  "Maps": [ "UndeadLair1.jm", "UndeadLair2.jm" ]
+}

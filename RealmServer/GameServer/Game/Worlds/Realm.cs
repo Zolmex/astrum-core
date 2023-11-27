@@ -12,43 +12,38 @@ namespace GameServer.Game.Worlds
 {
     public class Realm : World
     {
-        private readonly string[] _realmNames =
-        {
-            "Lich", "Goblin", "Ghost",
-            "Giant", "Gorgon", "Blob",
-            "Leviathan", "Unicorn", "Minotaur",
-            "Cube", "Pirate", "Spider",
-            "Snake", "Deathmage", "Gargoyle",
-            "Scorpion", "Djinn", "Phoenix",
-            "Satyr", "Drake", "Orc",
-            "Flayer", "Cyclops", "Sprite",
-            "Chimera", "Kraken", "Hydra",
-            "Slime", "Ogre", "Hobbit",
-            "Titan", "Medusa", "Golem",
-            "Demon", "Skeleton", "Mummy",
-            "Imp", "Bat", "Wyrm",
-            "Spectre", "Reaper", "Beholder",
-            "Dragon", "Harpy"
-        };
+        public bool Closed { get; set; }
+
+        public Oryx Oryx { get; }
 
         public Realm()
             : base(REALM, -1)
         {
             Name = GetRealmName();
+
+            Oryx = new Oryx(this);
         }
 
         public override void Initialize()
         {
             base.Initialize();
 
+            Oryx.Initialize();
             RealmManager.OnRealmAdded(Name);
+        }
+
+        public override void Tick(RealmTime time)
+        {
+            base.Tick(time);
+
+            Oryx.Tick(time);
         }
 
         private string GetRealmName()
         {
             string ret = null;
             while (ret == null || RealmManager.ActiveRealms.Contains(ret))
-                ret = _realmNames.RandomElement();
+                ret = RealmConfig.Config.Names.RandomElement();
             return ret;
         }
     }

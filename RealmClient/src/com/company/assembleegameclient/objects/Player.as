@@ -870,7 +870,7 @@ public class Player extends Character {
             map_.addObj(proj, x_, y_);
             angle = angle + arcGap;
         }
-        map_.gs_.gsc_.playerShoot(attackAngle, isAbility, numShots);
+        map_.gs_.gsc_.playerShoot(attackAngle);
     }
 
     private function getNextProjectileId():int{

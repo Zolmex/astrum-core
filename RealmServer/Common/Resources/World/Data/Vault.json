@@ -1,0 +1,10 @@
+﻿{
+  "Id": 0,
+  "Name": "Vault",
+  "DisplayName": "Vault",
+  "Difficulty": -1,
+  "MaxPlayers": -1,
+  "Blocksight": 0,
+  "LongLasting": false,
+  "Maps": [ "Vault.jm" ]
+}

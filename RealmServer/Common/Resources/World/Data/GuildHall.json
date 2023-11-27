@@ -1,0 +1,10 @@
+﻿{
+  "Id": 0,
+  "Name": "GHall",
+  "DisplayName": "Guild Hall",
+  "Difficulty": -1,
+  "MaxPlayers": -1,
+  "Blocksight": 0,
+  "LongLasting": false,
+  "Maps": [ "Guild0.jm", "Guild1.jm", "Guild2.jm", "Guild3.jm" ]
+}

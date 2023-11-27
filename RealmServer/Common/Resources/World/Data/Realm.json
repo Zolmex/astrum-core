@@ -3,8 +3,8 @@
   "Name": "Realm",
   "DisplayName": "Realm",
   "Difficulty": -1,
-  "MaxPlayers": -1,
+  "MaxPlayers": 200,
   "Blocksight": 0,
   "LongLasting": true,
-  "Maps": [ "realm1.wmap", "realm2.wmap", "realm3.wmap" ]
+  "Maps": [ "Realm1.wmap", "Realm2.wmap", "Realm3.wmap" ]
 }

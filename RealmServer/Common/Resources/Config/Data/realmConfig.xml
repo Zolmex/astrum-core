@@ -1,0 +1,20 @@
+﻿<RealmConfig>
+	<Names>Lich,Goblin,Ghost,Giant,Gorgon,Blob,Leviathan,Unicorn,Minotaur,Cube,Pirate,Spider,Snake,Deathmage,Gargoyle,Scorpion,Djinn,Phoenix,Satyr,Drake,Orc,Flayer,Cyclops,Sprite,Chimera,Kraken,Hydra,Slime,Ogre,Hobbit,Titan,Medusa,Golem,Demon,Skeleton,Mummy,Imp,Bat,Wyrm,Spectre,Reaper,Beholder,Dragon,Harpy</Names>
+	<Close min="10" max="10">EventsKilled</Close>
+	<Close min="60" max="120">MinutesElapsed</Close>
+	<Event objId="Ghost ship">
+		<SetPiece>GhostShip</SetPiece>
+	</Event>
+	<Event objId="shtrs Defense System">
+		<SetPiece>Avatar</SetPiece>
+	</Event>
+	<Event objId="Dragon Head">
+		<SetPiece>RockDragon</SetPiece>
+	</Event>
+	<Event objId="Hermit God">
+		<SetPiece>Hermit</SetPiece>
+	</Event>
+	<Event objId="Kage Kami">
+		<SetPiece>KageKami</SetPiece>
+	</Event>
+</RealmConfig>

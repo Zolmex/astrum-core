@@ -1,0 +1,10 @@
+﻿{
+  "Id": 0,
+  "Name": "WineCellar",
+  "DisplayName": "Wine Cellar",
+  "Difficulty": 5,
+  "MaxPlayers": -1,
+  "Blocksight": 0,
+  "LongLasting": false,
+  "Maps": [ "WineCellar.jm" ]
+}

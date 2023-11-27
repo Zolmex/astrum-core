@@ -427,19 +427,15 @@ public class GameServerConnection {
         this.serverConnection.sendMessage(load);
     }
 
-    public function playerShoot(angle:Number, ability:Boolean, numShots:int):void {
+    public function playerShoot(angle:Number):void {
         var playerShoot:PlayerShoot = this.messages.require(PLAYERSHOOT) as PlayerShoot;
         playerShoot.angle_ = angle;
-        playerShoot.ability_ = ability;
-        playerShoot.numShots = numShots;
         this.serverConnection.sendMessage(playerShoot);
     }
 
     private function onGoto(gotoPkt:Goto):void {
-        if (gotoPkt.objectId_ == playerId_) {
-            this.gs_.map.gotoRequested_++;
-        }
-        var go:GameObject = this.gs_.map.goDict_[gotoPkt.objectId_];
+        this.gs_.map.gotoRequested_++;
+        var go:GameObject = this.gs_.map.goDict_[playerId_];
         if (go == null) {
             return;
         }

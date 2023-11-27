@@ -258,5 +258,14 @@ namespace Common.Database
 
             return trans.Execute();
         }
+
+        public static void SaveCharacter(DbChar chr)
+        {
+            var trans = _db.CreateTransaction();
+
+            chr.Save(trans);
+
+            trans.Execute(CommandFlags.FireAndForget);
+        }
     }
 }

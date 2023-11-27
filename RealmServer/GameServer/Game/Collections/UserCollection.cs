@@ -17,7 +17,7 @@ namespace GameServer.Game.Collections
 
             lock (_dict)
                 if (_dict.TryGetValue(itemId, out var user) && user.Account != null)
-                    _userAccIds.Remove(user.Account.AccountId);
+                    _userAccIds.Remove(user.Account.AccountId); // Remove the acc id here and not on update because Account may be null
         }
 
         public void SetAccId(User user, int accId)
@@ -25,7 +25,7 @@ namespace GameServer.Game.Collections
             _userAccIds.TryAdd(accId, user);
         }
 
-        public User Get(int accId)
+        public User GetByAccId(int accId)
         {
             lock (_dict)
             {

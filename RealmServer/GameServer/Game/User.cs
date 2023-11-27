@@ -1,6 +1,6 @@
-﻿using GameServer.Game.Net;
-using GameServer.Game.Net.Messaging;
-using GameServer.Game.Net.Messaging.Outgoing;
+﻿using GameServer.Game.Network;
+using GameServer.Game.Network.Messaging;
+using GameServer.Game.Network.Messaging.Outgoing;
 using Common.Utilities;
 using Common.Database;
 using Common.Resources.World;
@@ -75,6 +75,8 @@ namespace GameServer.Game
 
         public void Load(DbChar chr, World world)
         {
+            State = ConnectionState.Ready;
+
             GameInfo.Load(chr, world);
 
             SendPacket(PacketId.CREATESUCCESS, CreateSuccess.Write(this,
@@ -86,8 +88,6 @@ namespace GameServer.Game
             SendPacket(PacketId.ACCOUNTLIST, AccountList.Write(this,
                 AccountList.Ignored,
                 Account.IgnoredIds ?? new int[0]));
-
-            State = ConnectionState.Ready;
         }
 
         private void Unload()

@@ -50,6 +50,7 @@ namespace GameServer.Game
             State = GameState.Idle;
 
             // Don't set char to null, we need that for reconnecting
+            Player.SaveCharacter();
             Player.LeaveWorld();
         }
 

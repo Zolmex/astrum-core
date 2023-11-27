@@ -1,0 +1,10 @@
+﻿{
+  "Id": 0,
+  "Name": "SnakePit",
+  "DisplayName": "Snake Pit",
+  "Difficulty": 2,
+  "MaxPlayers": -1,
+  "Blocksight": 0,
+  "LongLasting": false,
+  "Maps": [ "SnakePit.jm" ]
+}

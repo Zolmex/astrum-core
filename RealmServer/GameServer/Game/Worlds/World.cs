@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
+using Common.Resources.Config;
 
 namespace GameServer.Game.Worlds
 {
@@ -24,6 +25,9 @@ namespace GameServer.Game.Worlds
         public int Id { get; set; }
         public string Name { get; protected set; }
 
+        public Thread LogicThread { get; private set; }
+        public LogicTicker Logic { get; }
+
         public bool Disposed { get; private set; }
         public bool Deleted { get; private set; }
         public WorldConfig Config { get; private set; }
@@ -35,8 +39,12 @@ namespace GameServer.Game.Worlds
 
         public readonly EntityCollection Entities; // Complete list of entities in this world
         public readonly CharacterCollection Characters;
+        public readonly CharacterCollection Enemies;
         public readonly PlayerCollection Players;
         public readonly SmartCollection<Entity> ActiveEntities;
+
+        private readonly object _playerTickLock = new object();
+        private event Action<Player> _playerTick;
 
         protected readonly Logger _log;
 
@@ -50,9 +58,11 @@ namespace GameServer.Game.Worlds
             Name = name;
             MapId = mapId;
             Config = WorldLibrary.WorldConfigs[name];
+            Logic = new LogicTicker(this);
 
             Entities = new EntityCollection();
             Characters = new CharacterCollection();
+            Enemies = new CharacterCollection();
             Players = new PlayerCollection();
             ActiveEntities = new SmartCollection<Entity>();
         }
@@ -62,6 +72,15 @@ namespace GameServer.Game.Worlds
             LoadMap(Config.Name, MapId);
 
             _startTime = RealmManager.GlobalTime.TotalElapsedMs;
+
+            if (Config.LongLasting)
+            {
+                _startTime = 0;
+
+                LogicThread = new Thread(() => Logic.Run(GameServerConfig.Config.MsPT));
+                LogicThread.Name = $"[{Id}]{Name}";
+                LogicThread.Start();
+            }
         }
 
         public void LoadMap(string mapName, int mapId)
@@ -87,7 +106,12 @@ namespace GameServer.Game.Worlds
             Entities.Add(en);
 
             if (en is Character chr)
+            {
                 Characters.Add(chr);
+
+                if (en is Enemy enemy)
+                    Enemies.Add(enemy);
+            }
 
             if (en is Player player)
                 Players.Add(player);
@@ -99,9 +123,14 @@ namespace GameServer.Game.Worlds
             Entities.Remove(entityId);
 
             if (en is Character)
+            {
                 Characters.Remove(entityId);
 
-            if (en is Player)
+                if (en is Enemy)
+                    Enemies.Remove(entityId);
+            }
+
+            if (en.IsPlayer)
                 Players.Remove(entityId);
         }
 
@@ -109,10 +138,11 @@ namespace GameServer.Game.Worlds
         {
             Entities.Update();
             Characters.Update();
+            Enemies.Update();
             Players.Update();
         }
 
-        public void Tick(RealmTime time)
+        public virtual void Tick(RealmTime time)
         {
             if (Deleted)
             {
@@ -142,8 +172,10 @@ namespace GameServer.Game.Worlds
                         foreach (var en in chunk.Entities)
                             if (!en.Dead) // Here we put into a list the entities that belong to active chunks
                             {
-                                ActiveEntities.Add(en);
-                                if (en is Character chr && en is not Player)
+                                if (!en.IsPlayer)
+                                    ActiveEntities.Add(en);
+
+                                if (en is Character chr && !en.IsPlayer)
                                     chr.Tick(time);
                             }
                 }
@@ -154,10 +186,101 @@ namespace GameServer.Game.Worlds
             {
                 var plr = kvp.Value;
                 if (!plr.Dead)
+                {
+                    lock (_playerTickLock)
+                        _playerTick?.Invoke(plr);
                     plr.Tick(time);
+                }
             });
 
+            lock (_playerTickLock)
+                _playerTick = null;
+
             ActiveEntities.Clear();
+        }
+
+        public bool IsPassable(double x, double y, bool spawning = false, bool bypassNoWalk = false)
+        {
+            var x_ = (int)x;
+            var y_ = (int)y;
+
+            if (!Map.Contains(x_, y_))
+                return false;
+
+            var tile = Map[x_, y_];
+            if (tile.TileDesc.NoWalk && !bypassNoWalk)
+                return false;
+
+            if (tile.ObjectType == 0 || tile.Object == null)
+                return true;
+
+            return !tile.Object.Desc.FullOccupy && !tile.Object.Desc.EnemyOccupySquare && (!spawning || !tile.Object.Desc.OccupySquare);
+        }
+
+        public Entity SpawnSetPiece(string spName, int spawnX, int spawnY, int mapIndex = -1, string eventId = null)
+        {
+            if (spawnX < 0 || spawnY < 0 || spawnX > Map.Width || spawnY > Map.Height)
+                return null;
+
+            if (!WorldLibrary.MapDatas.TryGetValue(spName, out var setpiece))
+            {
+                _log.Error($"Invalid setpiece: {spName}");
+                return null;
+            }
+
+            Entity ret = null;
+            var map = mapIndex == -1 ? setpiece.RandomElement() : setpiece[mapIndex];
+            for (var spY = 0; spY < map.Height; spY++)
+                for (var spX = 0; spX < map.Width; spX++)
+                {
+                    var x = spawnX + spX;
+                    var y = spawnY + spY;
+                    if (x < 0 || y < 0 || x > Map.Width || y > Map.Height)
+                        continue;
+
+                    var tile = Map[x, y];
+                    var spTile = map.Tiles[spX, spY];
+                    if (spTile.GroundType != 255)
+                    {
+                        tile.Object?.LeaveWorld();
+                        tile.Update(spTile);
+                    }
+
+                    if (spTile.ObjectType != 0xff && spTile.ObjectType != 0)
+                    {
+                        tile.Object?.LeaveWorld();
+
+                        var entity = Entity.Resolve(spTile.ObjectType);
+                        if (entity.Desc.Static)
+                        {
+                            if (entity.Desc.BlocksSight)
+                                tile.BlocksSight = true;
+                            tile.Object = entity;
+                        }
+
+                        entity.Move(x + 0.5f, y + 0.5f);
+                        entity.EnterWorld(this);
+
+                        if (!string.IsNullOrEmpty(eventId) && eventId == entity.Desc.ObjectId)
+                            ret = entity;
+                    }
+
+                    if (tile.Region != TileRegion.None)
+                    {
+                        var pos = new WorldPosData() { X = x, Y = y };
+                        Map.Regions[pos] = tile.Region;
+                    }
+
+                    BroadcastAll(plr => plr.TileUpdate(tile));
+                }
+
+            return ret;
+        }
+
+        public void BroadcastAll(Action<Player> act)
+        {
+            lock (_playerTickLock)
+                _playerTick += act;
         }
 
         public void Delete()
@@ -171,6 +294,7 @@ namespace GameServer.Game.Worlds
             ActiveEntities.Clear();
             Entities.Clear();
             Characters.Clear();
+            Enemies.Clear();
             Players.Clear();
         }
     }

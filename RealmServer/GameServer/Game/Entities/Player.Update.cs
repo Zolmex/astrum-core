@@ -1,8 +1,8 @@
 ﻿using Common;
 using Common.Utilities;
 using GameServer.Game.Entities;
-using GameServer.Game.Net.Messaging;
-using GameServer.Game.Net.Messaging.Outgoing;
+using GameServer.Game.Network.Messaging;
+using GameServer.Game.Network.Messaging.Outgoing;
 using GameServer.Game.Worlds;
 using System;
 using System.Collections.Concurrent;
@@ -37,18 +37,28 @@ namespace GameServer.Game.Entities
 
             if (_chunk != Tile.Chunk)
             {
-                if (_chunk == null)
-                    _chunk = Tile.Chunk;
-                else
-                    for (var cY = _chunk.CY - ACTIVE_RADIUS; cY < _chunk.CY + ACTIVE_RADIUS; cY++) // Decrease activity of old nearby chunks
-                        for (var cX = _chunk.CX - ACTIVE_RADIUS; cX < _chunk.CX + ACTIVE_RADIUS; cX++)
-                            World.Map.Chunks[cX, cY].ActivityDown();
+                if (_chunk != null)
+                    for (var cY = _chunk.CY - ACTIVE_RADIUS; cY <= _chunk.CY + ACTIVE_RADIUS; cY++) // Decrease activity of old nearby chunks
+                        for (var cX = _chunk.CX - ACTIVE_RADIUS; cX <= _chunk.CX + ACTIVE_RADIUS; cX++)
+                        {
+                            var chunk = World.Map.Chunks[cX, cY];
+                            if (chunk != null)
+                            {
+                                chunk.ActivityDown();
+
+                                if (chunk.DistSqr(Tile.Chunk) >= 2 * 2) // Distance higher than or equal to 2 chunks (squared)
+                                    lock (chunk.Entities)
+                                        foreach (var en in chunk.Entities)
+                                            if (IsEntityVisible(en))
+                                                _deadEntities.Enqueue(en);
+                            }
+                        }
 
                 _chunk = Tile.Chunk; // Update current chunk
 
-                for (var cY = _chunk.CY - ACTIVE_RADIUS; cY < _chunk.CY + ACTIVE_RADIUS; cY++) // Increase activity of new nearby chunks
-                    for (var cX = _chunk.CX - ACTIVE_RADIUS; cX < _chunk.CX + ACTIVE_RADIUS; cX++)
-                        World.Map.Chunks[cX, cY].ActivityUp();
+                for (var cY = _chunk.CY - ACTIVE_RADIUS; cY <= _chunk.CY + ACTIVE_RADIUS; cY++) // Increase activity of new nearby chunks
+                    for (var cX = _chunk.CX - ACTIVE_RADIUS; cX <= _chunk.CX + ACTIVE_RADIUS; cX++)
+                        World.Map.Chunks[cX, cY]?.ActivityUp();
             }
         }
 
@@ -79,62 +89,84 @@ namespace GameServer.Game.Entities
                     var pY = (int)Position.Y;
                     var width = World.Map.Width;
                     var height = World.Map.Height;
-                    for (var y = pY - SIGHT_RADIUS; y < pY + SIGHT_RADIUS; y++)
-                        for (var x = pX - SIGHT_RADIUS; x < pX + SIGHT_RADIUS; x++)
+                    for (var y = pY - SIGHT_RADIUS; y <= pY + SIGHT_RADIUS; y++)
+                        for (var x = pX - SIGHT_RADIUS; x <= pX + SIGHT_RADIUS; x++)
                             if (x >= 0 && x < width && y >= 0 && y < height && this.TileDistSqr(x, y) <= SIGHT_RADIUS_SQR)
                             {
                                 var tile = World.Map[x, y];
 
-                                if (!_tilesDiscovered.Contains(tile)) // This is a newly discovered tile
-                                {
-                                    _newTiles.Add(tile);
-                                    _tilesDiscovered.Add(tile);
-                                }
                                 _visibleTiles.Add(tile);
+                                if (_tilesDiscovered.Add(tile)) // This is a newly discovered tile
+                                    _newTiles.Add(tile);
                             }
                     break;
             }
         }
 
+        public void TileUpdate(WorldTile tile)
+        {
+            _tilesDiscovered.Remove(tile);
+        }
+
         public void GetEntities()
         {
-            foreach (var kvp in World.ActiveEntities)
+            foreach (var kvp in World.Players)
             {
-                var en = kvp.Value;
-                var visible = IsEntityVisible(en);
-                if (visible && _visibleEntities.Add(en))
+                var plr = kvp.Value;
+                if (!plr.Dead && _visibleEntities.Add(plr))
                 {
-                    en.DeathEvent += HandleEntityDeath;
-                    en.Stats.StatChangedEvent += HandleEntityStatChanged;
-                    _newEntities.Add(en.Stats.GetObjectData());
-                }
-                if (!visible)
-                {
-                    if (_visibleEntities.Add(en))
-                        _visibleEntities.Remove(en);
-                    else
-                    {
-                        en.DeathEvent -= HandleEntityDeath;
-                        en.Stats.StatChangedEvent -= HandleEntityStatChanged;
-                        _oldEntities.Add(en.Stats.GetObjectDropData());
-                        _visibleEntities.Remove(en);
-                    }
+                    plr.DeathEvent += HandleEntityDeath;
+                    plr.Stats.StatChangedEvent += HandleEntityStatChanged;
+                    _newEntities.Add(plr.Stats.GetObjectData());
                 }
             }
 
-            while (_deadEntities.TryDequeue(out var en))
+            for (var cY = _chunk.CY - ACTIVE_RADIUS; cY <= _chunk.CY + ACTIVE_RADIUS; cY++)
+                for (var cX = _chunk.CX - ACTIVE_RADIUS; cX <= _chunk.CX + ACTIVE_RADIUS; cX++)
+                {
+                    var chunk = World.Map.Chunks[cX, cY];
+                    if (chunk != null)
+                    {
+                        lock (chunk.Entities)
+                            foreach (var en in chunk.Entities)
+                            {
+                                if (en.IsPlayer)
+                                    continue;
+
+                                var visible = IsEntityVisible(en);
+                                if (visible && _visibleEntities.Add(en))
+                                {
+                                    en.DeathEvent += HandleEntityDeath;
+                                    en.Stats.StatChangedEvent += HandleEntityStatChanged;
+                                    _newEntities.Add(en.Stats.GetObjectData());
+                                }
+                                if (!visible)
+                                {
+                                    if (_visibleEntities.Remove(en))
+                                    {
+                                        en.DeathEvent -= HandleEntityDeath;
+                                        en.Stats.StatChangedEvent -= HandleEntityStatChanged;
+                                        _oldEntities.Add(en.Stats.GetObjectDropData());
+                                    }
+                                }
+                            }
+                    }
+                }
+
+            while (_deadEntities.TryDequeue(out var en) && _visibleEntities.Remove(en))
             {
+                en.DeathEvent -= HandleEntityDeath;
+                en.Stats.StatChangedEvent -= HandleEntityStatChanged;
                 _oldEntities.Add(en.Stats.GetObjectDropData());
-                _visibleEntities.Remove(en);
             }
         }
 
         private bool IsEntityVisible(Entity en)
         {
-            if (en is Player)
+            if (en.IsPlayer)
                 return true;
 
-            if (en.IsStandingOn(_visibleTiles))
+            if (_visibleTiles.Contains(en.Tile))
                 return true;
 
             return false;

@@ -1,5 +1,5 @@
 {
-	"config": "air",
+	"config": "flex",
 	"compilerOptions": {
 		"output": "bin-debug/WebMain.swf",
 		"source-path": [

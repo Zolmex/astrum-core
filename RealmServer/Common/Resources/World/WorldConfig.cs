@@ -16,5 +16,6 @@
         public bool ShowDisplays { get; set; }
         public string[] Maps { get; set; }
         public bool LongLasting { get; set; }
+        public bool Setpiece { get; set; }
     }
 }

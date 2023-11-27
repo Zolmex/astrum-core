@@ -19,5 +19,15 @@ namespace Common.Database
             Buffer.BlockCopy(value, 0, ret, 0, ret.Length);
             return ret;
         }
+
+        public byte[] Write(ushort[] value)
+        {
+            if (value == null)
+                return null;
+
+            var ret = new byte[value.Length * sizeof(ushort)];
+            Buffer.BlockCopy(value, 0, ret, 0, ret.Length);
+            return ret;
+        }
     }
 }

@@ -1,0 +1,10 @@
+﻿{
+  "Id": 0,
+  "Name": "OceanTrench",
+  "DisplayName": "Ocean Trench",
+  "Difficulty": 4,
+  "MaxPlayers": -1,
+  "Blocksight": 0,
+  "LongLasting": false,
+  "Maps": [ "OceanTrench.jm" ]
+}

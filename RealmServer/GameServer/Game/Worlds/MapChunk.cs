@@ -43,7 +43,8 @@ namespace GameServer.Game.Worlds
 
         public void ActivityDown()
         {
-            Interlocked.Decrement(ref Activity);
+            if (Activity > 0)
+                Interlocked.Decrement(ref Activity);
         }
 
         public int DistSqr(MapChunk chunk)

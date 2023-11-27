@@ -36,11 +36,6 @@ namespace GameServer.Game.Entities
             return dx * dx + dy * dy;
         }
 
-        public static bool IsStandingOn(this Entity en, IEnumerable<WorldTile> tiles)
-        {
-            return tiles.Contains(en.Tile);
-        }
-
         //public static IEnumerable<Entity> GetNearestEntities(this Entity entity, float radius, bool byTile = false)
         //    => entity.World.ChunkManager.HitTest(entity.X, entity.Y, radius)
         //        .Where(e => e.Dist(entity, byTile) < radius);

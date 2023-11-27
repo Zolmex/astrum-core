@@ -5,7 +5,7 @@ package kabam.rotmg.messaging.impl.incoming
    public class AllyShoot extends IncomingMessage
    {
       public var ownerId_:int;
-      public var containerType_:int;
+      public var containerType_:uint;
       public var angle_:Number;
       
       public function AllyShoot(id:uint, callback:Function)
@@ -16,7 +16,7 @@ package kabam.rotmg.messaging.impl.incoming
       override public function parseFromInput(data:IDataInput) : void
       {
          this.ownerId_ = data.readInt();
-         this.containerType_ = data.readShort();
+         this.containerType_ = data.readUnsignedShort();
          this.angle_ = data.readFloat();
       }
       

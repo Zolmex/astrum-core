@@ -2,8 +2,8 @@
 using Common.Database;
 using GameServer.Game.Chat.Commands;
 using GameServer.Game.Entities;
-using GameServer.Game.Net.Messaging;
-using GameServer.Game.Net.Messaging.Outgoing;
+using GameServer.Game.Network.Messaging;
+using GameServer.Game.Network.Messaging.Outgoing;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -62,9 +62,20 @@ namespace GameServer.Game.Entities
                 text));
         }
 
+        public void SendEnemy(string name, string text)
+        {
+            User.SendPacket(PacketId.TEXT, Text.Write(User,
+                $"#{name}",
+                -1,
+                -1,
+                (byte)3,
+                null,
+                text));
+        }
+
         public void Speak(string text)
         {
-            if (!ValidateSpeak(RealmManager.GlobalTime, text))
+            if (!ValidateSpeak(World.Logic.Time, text))
                 return;
 
             if (text.StartsWith('/'))

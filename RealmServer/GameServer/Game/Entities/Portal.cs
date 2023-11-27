@@ -1,7 +1,7 @@
 ﻿using Common.Resources.World;
 using Common.Resources.Xml;
-using GameServer.Game.Net.Messaging;
-using GameServer.Game.Net.Messaging.Outgoing;
+using GameServer.Game.Network.Messaging;
+using GameServer.Game.Network.Messaging.Outgoing;
 using GameServer.Game.Worlds;
 using System;
 using System.Collections.Generic;
@@ -39,7 +39,13 @@ namespace GameServer.Game.Entities
         {
             base.Initialize();
 
-            Name = PortalWorld.Name + " (" + PortalWorld.Players.Count + ")";
+            Name = PortalWorld.Name + " (" + PortalWorld.Players.Count;
+
+            var maxPlayers = PortalWorld.Config.MaxPlayers;
+            if (maxPlayers == -1)
+                Name += ")";
+            else
+                Name += $"/{maxPlayers})";
         }
 
         public override bool Tick(RealmTime time)
@@ -47,7 +53,12 @@ namespace GameServer.Game.Entities
             if (!base.Tick(time))
                 return false;
 
-            Name = PortalWorld.Name + " (" + PortalWorld.Players.Count + ")";
+            Name = PortalWorld.Name + " (" + PortalWorld.Players.Count;
+            var maxPlayers = PortalWorld.Config.MaxPlayers;
+            if (maxPlayers == -1)
+                Name += ")";
+            else
+                Name += $"/{maxPlayers})";
             return true;
         }
     }

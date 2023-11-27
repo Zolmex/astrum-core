@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Linq;
+using System.Numerics;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
@@ -27,6 +28,41 @@ namespace GameServer.Game.Chat.Commands
 
         public abstract void Execute(Player player, string args);
 
+        protected List<Player> ApplyTo(string args, Player player)
+        {
+            var playerList = new List<Player>();
+            switch (args)
+            {
+                case "self":
+                    playerList.Add(player);
+                    break;
+                case "nearby":
+                    foreach (var kvp in player.World.Players)
+                    {
+                        var plr = kvp.Value;
+                        if (plr.DistSqr(player) <= Player.SIGHT_RADIUS_SQR)
+                            playerList.Add(plr);
+                    }
+                    break;
+                case "all":
+                    foreach (var kvp in player.World.Players)
+                    {
+                        var plr = kvp.Value;
+                        playerList.Add(plr);
+                    }
+                    break;
+                case "server":
+                    foreach (var kvp in RealmManager.Users)
+                    {
+                        var user = kvp.Value;
+                        if (user.State == ConnectionState.Ready && user.GameInfo.State == GameState.Playing)
+                            playerList.Add(user.GameInfo.Player);
+                    }
+                    break;
+            }
+            return playerList;
+        }
+
         public static void Load()
         {
             var types = Assembly.GetExecutingAssembly().GetTypes();
@@ -36,14 +72,14 @@ namespace GameServer.Game.Chat.Commands
                 if (!type.IsAbstract && type.IsSubclassOf(typeof(PlayerCommand)))
                 {
                     var cmd = (PlayerCommand)Activator.CreateInstance(type);
-                    _commands.Add(cmd.Name, cmd);
+                    _commands.Add(cmd.Name.ToLower(), cmd);
                 }
             }
         }
 
         public static void ExecuteCommand(Player player, string name, string args)
         {
-            if (!_commands.TryGetValue(name, out var cmd))
+            if (!_commands.TryGetValue(name.ToLower(), out var cmd))
             {
                 player.SendError($"Command not found: {name}");
                 return;

@@ -1,4 +1,5 @@
 ﻿using Common.Utilities;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -8,13 +9,14 @@ namespace Common.Resources.Xml
 {
     public static class XmlLibrary
     {
-        private static readonly Logger Log = new Logger(typeof(XmlLibrary));
+        private static readonly Logger _log = new Logger(typeof(XmlLibrary));
 
         public static readonly Dictionary<ushort, ObjectDesc> ObjectDescs = new Dictionary<ushort, ObjectDesc>();
         public static readonly Dictionary<ushort, ContainerDesc> ContainerDescs = new Dictionary<ushort, ContainerDesc>();
         public static readonly Dictionary<ushort, PlayerDesc> PlayerDescs = new Dictionary<ushort, PlayerDesc>();
         public static readonly Dictionary<ushort, Item> ItemDescs = new Dictionary<ushort, Item>();
         public static readonly Dictionary<ushort, TileDesc> TileDescs = new Dictionary<ushort, TileDesc>();
+        public static readonly Dictionary<TerrainType, List<ObjectDesc>> TerrainEnemies = new Dictionary<TerrainType, List<ObjectDesc>>();
 
         /// <summary>
         /// Loads every .xml file in the directory <paramref name="dir"/>.
@@ -25,10 +27,10 @@ namespace Common.Resources.Xml
             var files = Directory.EnumerateFiles(dir, "*xml", SearchOption.AllDirectories);
             foreach (string file in files)
             {
-                Log.Debug($"Loading XML {file}...");
+                _log.Debug($"Loading XML {file}...");
                 MakeDictionaries(XElement.Parse(File.ReadAllText(file)));
             }
-            Log.Info("XML Library loaded successfully.");
+            _log.Info("XML Library loaded successfully.");
         }
 
         private static void MakeDictionaries(XElement root)
@@ -47,7 +49,17 @@ namespace Common.Resources.Xml
                         PlayerDescs.Add(type, new PlayerDesc(xml, id, type));
                     else if (xml.HasElement("Item"))
                         ItemDescs.Add(type, new Item(xml, id, type));
-                    ObjectDescs.Add(type, new ObjectDesc(xml, id, type));
+
+                    var objDesc = new ObjectDesc(xml, id, type);
+                    ObjectDescs.Add(type, objDesc);
+
+                    if (objDesc.Terrain != TerrainType.None/* && xml.HasElement("Spawn")*/) // Entities spawned by Oryx in the Realm
+                    {
+                        var terrain = Enum.Parse<TerrainType>(xml.Element("Terrain").Value);
+                        if (!TerrainEnemies.TryGetValue(terrain, out var list))
+                            list = TerrainEnemies[terrain] = new List<ObjectDesc>();
+                        list.Add(objDesc);
+                    }
                 }
                 if (name == "Ground")
                     TileDescs.Add(type, new TileDesc(xml, id, type));
@@ -58,7 +70,7 @@ namespace Common.Resources.Xml
         {
             var ret = ObjectDescs.Values.FirstOrDefault(desc => desc.ObjectId.EqualsIgnoreCase(id));
             if (ret == null)
-                throw new KeyNotFoundException($"ObjectId: {id}");
+                _log.Warn($"Object id not found: {id}");
             return ret;
         }
 
@@ -66,7 +78,7 @@ namespace Common.Resources.Xml
         {
             var ret = PlayerDescs.Values.FirstOrDefault(desc => desc.ObjectId.EqualsIgnoreCase(id));
             if (ret == null)
-                throw new KeyNotFoundException($"ObjectId: {id}");
+                _log.Warn($"Player id not found: {id}");
             return ret;
         }
 
@@ -74,7 +86,7 @@ namespace Common.Resources.Xml
         {
             var ret = ItemDescs.Values.FirstOrDefault(desc => desc.ObjectId.EqualsIgnoreCase(id));
             if (ret == null)
-                throw new KeyNotFoundException($"ObjectId: {id}");
+                _log.Warn($"Item id not found: {id}");
             return ret;
         }
 
@@ -82,7 +94,7 @@ namespace Common.Resources.Xml
         {
             var ret = TileDescs.Values.FirstOrDefault(desc => desc.ObjectId.EqualsIgnoreCase(id));
             if (ret == null)
-                throw new KeyNotFoundException($"ObjectId: {id}");
+                _log.Warn($"Tile id not found: {id}");
             return ret;
         }
     }

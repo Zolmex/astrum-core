@@ -24,7 +24,6 @@ namespace GameServer.Game
         private static readonly Logger _log = new Logger(typeof(RealmManager));
 
         public static RealmTime GlobalTime; // This field is updated every tick
-        public static readonly List<RealmTime> TickHistory = new List<RealmTime>();
 
         public static readonly UserCollection Users = new UserCollection();
         public static readonly WorldCollection Worlds = new WorldCollection();
@@ -55,15 +54,18 @@ namespace GameServer.Game
                 GlobalTime.ElapsedMsDelta = (int)sw.ElapsedMilliseconds;
                 GlobalTime.TotalElapsedMs += sw.ElapsedMilliseconds;
                 GlobalTime.TickCount++;
-                TickHistory.Add(GlobalTime);
-#if DEBUG
+
                 if (GlobalTime.ElapsedMsDelta >= lagMs)
                     _log.Warn($"LAGGED | MsPT: {mspt} Elapsed: {GlobalTime.ElapsedMsDelta}");
-#endif
+
                 sw.Restart();
 
                 foreach (var kvp in Worlds)
-                    kvp.Value.Tick(GlobalTime);
+                {
+                    var world = kvp.Value;
+                    if (!world.Config.LongLasting)
+                        world.Tick(GlobalTime);
+                }
             }
         }
 
@@ -73,7 +75,11 @@ namespace GameServer.Game
             Worlds.Update();
 
             foreach (var kvp in Worlds)
-                kvp.Value.Update();
+            {
+                var world = kvp.Value;
+                if (!world.Config.LongLasting)
+                    world.Update();
+            }
         }
 
         public static void ConnectUser(User user)
