@@ -8,4 +8,5 @@
   <MaxPlayers>200</MaxPlayers>
   <Version>0.3.3</Version>
   <!--<AdminOnly/>-->
+	<RealmCount>1</RealmCount>
 </GameServerConfig>
