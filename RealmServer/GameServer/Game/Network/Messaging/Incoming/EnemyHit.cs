@@ -19,7 +19,15 @@ namespace GameServer.Game.Network.Messaging.Incoming
 
         protected override void Handle(User user)
         {
-            // TODO
+            if (user.GameInfo.State != GameState.Playing)
+                return;
+
+            var player = user.GameInfo.Player;
+            var target = player.World.Entities.Get(TargetId);
+            if (target == null)
+                return;
+
+            target.ProjectileHit(player, BulletId);
         }
 
         public override string ToString()

@@ -1,4 +1,5 @@
-﻿using Common.Utilities;
+﻿using Common.Resources.Config;
+using Common.Utilities;
 using GameServer.Game.Chat;
 using GameServer.Game.Chat.Commands;
 using GameServer.Game.Collections;
@@ -24,15 +25,21 @@ namespace GameServer.Game
         private static readonly Logger _log = new Logger(typeof(RealmManager));
 
         public static RealmTime GlobalTime; // This field is updated every tick
+        public static readonly List<RealmTime> TickHistory = new List<RealmTime>();
+        public static int TPS;
 
         public static readonly UserCollection Users = new UserCollection();
         public static readonly WorldCollection Worlds = new WorldCollection();
+        public static List<Tuple<int, Action>> Timers;
 
         public static readonly List<string> ActiveRealms = new List<string>();
 
         public static void Init()
         {
+            TPS = GameServerConfig.Config.TPS;
+
             PlayerCommand.Load();
+            Timers = new List<Tuple<int, Action>>();
 
             AddWorld(new Nexus());
 
@@ -51,21 +58,24 @@ namespace GameServer.Game
                 if (sw.ElapsedMilliseconds < mspt)
                     continue;
 
+                foreach (Tuple<int, Action> timer in Timers.ToArray())
+                    if (timer.Item1 == GlobalTime.TickCount)
+                    {
+                        timer.Item2();
+                        Timers.Remove(timer);
+                    }
+
                 GlobalTime.ElapsedMsDelta = (int)sw.ElapsedMilliseconds;
                 GlobalTime.TotalElapsedMs += sw.ElapsedMilliseconds;
                 GlobalTime.TickCount++;
+                TickHistory.Add(GlobalTime);
 
                 if (GlobalTime.ElapsedMsDelta >= lagMs)
                     _log.Warn($"LAGGED | MsPT: {mspt} Elapsed: {GlobalTime.ElapsedMsDelta}");
 
                 sw.Restart();
 
-                foreach (var kvp in Worlds)
-                {
-                    var world = kvp.Value;
-                    if (!world.Config.LongLasting)
-                        world.Tick(GlobalTime);
-                }
+                Parallel.ForEach(Worlds, kvp => kvp.Value.Tick(GlobalTime));
             }
         }
 
@@ -75,11 +85,17 @@ namespace GameServer.Game
             Worlds.Update();
 
             foreach (var kvp in Worlds)
-            {
-                var world = kvp.Value;
-                if (!world.Config.LongLasting)
-                    world.Update();
-            }
+                kvp.Value.Update();
+        }
+
+        public static void AddTimedAction(int time, Action action)
+        {
+            Timers.Add(Tuple.Create((int)GlobalTime.TickCount + TicksFromTime(time), action));
+        }
+
+        public static int TicksFromTime(int time)
+        {
+            return time / (1000 / TPS);
         }
 
         public static void ConnectUser(User user)

@@ -1,4 +1,6 @@
-﻿using Common.Utilities;
+﻿using Common.Resources.Xml;
+using Common.Utilities;
+using GameServer.Game.Entities;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,31 +10,63 @@ using System.Threading.Tasks;
 
 namespace GameServer.Game.Collections
 {
-    public class ProjectileState : IIdentifiable
+    public class ProjectileState
     {
-        private static int _projectileId;
-        private static readonly ProjectileFactory _factory = new ProjectileFactory(500000);
+        private static readonly ProjectileFactory _factory = new ProjectileFactory(256); // Size will increase as new projectiles are created
 
-        public int Id { get; set; }
-
+        public byte BulletId { get; set; }
         public int TimeAlive { get; set; }
         public int TTL { get; private set; } // When TimeAlive reaches time to live, projectile dies
+        public int Damage { get; private set; }
+        public bool Dead { get; private set; }
+        public bool MultiHit { get; private set; }
 
-        public ProjectileState()
+        private readonly HashSet<Entity> _hits = new HashSet<Entity>();
+
+        public void Init(byte bulletId, ProjectileDesc projDesc)
         {
-            Id = Interlocked.Increment(ref _projectileId);
+            Reset();
+
+            BulletId = bulletId;
+
+            MultiHit = projDesc.MultiHit;
+        }
+
+        public void SetDamage(int dmg)
+        {
+            Damage = dmg;
         }
 
         public void SetTTL(int ttl)
         {
+            TimeAlive = 0;
             TTL = ttl;
+        }
+
+        public void HitAdd(Entity en)
+        {
+            _hits.Add(en);
+
+            if (!MultiHit)
+                Death();
+        }
+
+        public void Death()
+        {
+            Dead = true;
+        }
+
+        public void Reset()
+        {
+            Dead = false;
+            TimeAlive = 0;
+            TTL = 0;
+            Damage = 0;
+            _hits.Clear();
         }
 
         public void Recycle()
         {
-            TimeAlive = 0;
-            TTL = 0;
-
             _factory.Push(this);
         }
 

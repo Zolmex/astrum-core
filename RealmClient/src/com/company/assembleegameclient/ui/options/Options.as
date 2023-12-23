@@ -193,6 +193,10 @@ public class Options extends Sprite {
         this.optionIndex_ = 0;
     }
 
+    private static function makeHideLabels():Vector.<String> {
+        return new <String>["All", "None", "Locked", "Guild", "Both"];
+    }
+
     private function addControlsOptions():void {
         this.addOption(new KeyMapper("moveUp", "Move Up", "Key to will move character up"));
         this.addOption(new KeyMapper("moveLeft", "Move Left", "Key to will move character to the left"));
@@ -274,6 +278,16 @@ public class Options extends Sprite {
         if (!Parameters.GPURenderError) {
             this.addOption(new ChoiceOption("GPURender", new <String>["On", "Off"], [true, false], "Hardware Acceleration", "Enables Hardware Acceleration if your system supports it", null));
         }
+        this.addOption(new ChoiceOption("hideList", makeHideLabels(), [0, 1, 2, 3, 4], "Show Players", "Show players on screen", null));
+        this.addOption(new ChoiceOption("allyShotsList", makeHideLabels(), [0, 1, 2, 3, 4], "Ally Shots", "This toggles whether to show and render ally shots.", onOptionsChanged));
+        this.addOption(new ChoiceOption("allyDamageList", makeHideLabels(), [0, 1, 2, 3, 4], "Ally Damage", "This toggles whether to show damage dealt by allies. This only works if you have Ally Shots turned on.", onOptionsChanged));
+        this.addOption(new ChoiceOption("allyNotifsList", makeHideLabels(), [0, 1, 2, 3, 4], "Ally Notifications", "This toggles whether to show notifications above players other than you. This includes damage taken by others and their item effects, etc.", onOptionsChanged));
+        this.addOption(new ChoiceOption("allyEntitiesList", makeHideLabels(), [0, 1, 2, 3, 4], "Ally Entities", "Hides/shows all entities and pets spawned by players. Ex: Cards, Pets, Decoys", null));
+        this.addOption(new ChoiceOption("allyParticlesList", makeHideLabels(), [0, 1, 2, 3, 4], "Ally Particles", "Disable particles produces by allies, such as particles produced by abilities.", onOptionsChanged));
+    }
+
+    private function onOptionsChanged():void {
+        this.gs_.gsc_.optionsChanged();
     }
 
     public static function refreshCursor():void {

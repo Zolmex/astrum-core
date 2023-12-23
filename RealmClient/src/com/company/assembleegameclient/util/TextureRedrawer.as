@@ -6,10 +6,12 @@ import com.company.util.PointUtil;
 import flash.display.BitmapData;
 import flash.display.Shader;
 import flash.filters.BitmapFilterQuality;
+import flash.filters.ColorMatrixFilter;
 import flash.filters.GlowFilter;
 import flash.filters.ShaderFilter;
 import flash.geom.ColorTransform;
 import flash.geom.Matrix;
+import flash.geom.Point;
 import flash.geom.Rectangle;
 import flash.utils.ByteArray;
 import flash.utils.Dictionary;
@@ -66,6 +68,23 @@ public class TextureRedrawer {
          }
       }
       return false;
+   }
+
+   public static function desaturate(bitmapData:BitmapData):BitmapData {
+      var rLum:Number = 0.2225;
+      var gLum:Number = 0.7169;
+      var bLum:Number = 0.0606;
+
+      var matrix:Array = [rLum, gLum, bLum, 0, 0,
+         rLum, gLum, bLum, 0, 0,
+         rLum, gLum, bLum, 0, 0,
+         0, 0, 0, 1, 0];
+
+      var filter:ColorMatrixFilter = new ColorMatrixFilter(matrix);
+      var desaturatedBitmapData:BitmapData = bitmapData.clone();
+      desaturatedBitmapData.applyFilter(bitmapData, bitmapData.rect, new Point(0,0), filter);
+
+      return desaturatedBitmapData;
    }
 
    public static function resize(tex:BitmapData, mask:BitmapData, size:int, padBottom:Boolean, op1:int, op2:int, sMult:Number = 5):BitmapData {

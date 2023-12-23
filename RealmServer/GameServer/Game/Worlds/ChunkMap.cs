@@ -8,7 +8,7 @@ namespace GameServer.Game.Worlds
 {
     public class ChunkMap
     {
-        public const float CHUNK_SIZE = 32;
+        public const float CHUNK_SIZE = 16;
 
         public MapChunk this[int x, int y]
         {
@@ -26,8 +26,8 @@ namespace GameServer.Game.Worlds
 
         public ChunkMap(int width, int height)
         {
-            Width = (int)(width / CHUNK_SIZE); // Include the full width and height of the map
-            Height = (int)(height / CHUNK_SIZE);
+            Width = (int)Math.Ceiling(width / CHUNK_SIZE); // Include the full width and height of the map
+            Height = (int)Math.Ceiling(height / CHUNK_SIZE);
 
             _chunks = new MapChunk[Width, Height];
             for (int cY = 0; cY < Height; cY++)

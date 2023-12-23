@@ -7,14 +7,16 @@ package com.company.assembleegameclient.mapeditor
    import com.company.assembleegameclient.map.RegionLibrary;
    import com.company.assembleegameclient.objects.ObjectLibrary;
    import com.company.assembleegameclient.screens.AccountScreen;
-   import com.company.assembleegameclient.ui.dropdown.DropDown;
+import com.company.assembleegameclient.screens.TitleMenuOption;
+import com.company.assembleegameclient.ui.dropdown.DropDown;
    import com.company.util.IntPoint;
    import com.company.util.SpriteUtil;
    import com.hurlant.util.Base64;
    import flash.display.Sprite;
    import flash.events.Event;
    import flash.events.IOErrorEvent;
-   import flash.geom.Rectangle;
+import flash.events.MouseEvent;
+import flash.geom.Rectangle;
    import flash.net.FileFilter;
    import flash.net.FileReference;
    import flash.utils.ByteArray;
@@ -22,15 +24,19 @@ package com.company.assembleegameclient.mapeditor
    import kabam.rotmg.core.StaticInjectorContext;
    import kabam.rotmg.ui.view.components.ScreenBase;
    import net.hires.debug.Stats;
-   
-   public class EditingScreen extends Sprite
+
+import org.osflash.signals.Signal;
+
+public class EditingScreen extends Sprite
    {
       
       private static const MAP_Y:int = 600 - MEMap.SIZE - 10;
       
       public static const stats_:Stats = new Stats();
-       
-      
+
+      public const close:Signal = new Signal();
+      private var backButton:TitleMenuOption;
+
       public var commandMenu_:MECommandMenu;
       
       private var commandQueue_:CommandQueue;
@@ -71,6 +77,11 @@ package com.company.assembleegameclient.mapeditor
          this.commandMenu_.addEventListener(CommandEvent.SAVE_COMMAND_EVENT,this.onSave);
          this.commandMenu_.addEventListener(CommandEvent.TEST_COMMAND_EVENT,this.onTest);
          addChild(this.commandMenu_);
+         this.backButton = new TitleMenuOption("back", 22, false);
+         this.backButton.x = 750 - backButton.width;
+         this.backButton.y = 60 - backButton.height;
+         this.backButton.addEventListener(MouseEvent.MOUSE_UP, goBack);
+         addChild(backButton);
          this.commandQueue_ = new CommandQueue();
          this.meMap_ = new MEMap();
          this.meMap_.addEventListener(TilesEvent.TILES_EVENT,this.onTilesEvent);
@@ -419,5 +430,10 @@ package com.company.assembleegameclient.mapeditor
       {
          dispatchEvent(new MapTestEvent(this.createMapJSON()));
       }
+
+      public function goBack(e:Event):void {
+         this.close.dispatch();
+      }
+
    }
 }

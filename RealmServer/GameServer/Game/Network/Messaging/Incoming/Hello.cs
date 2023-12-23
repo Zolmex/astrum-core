@@ -77,10 +77,10 @@ namespace GameServer.Game.Network.Messaging.Incoming
                 return;
             }
 
-            var seed = (uint)new Random().Next(1, int.MaxValue);
+            var seed = (uint)(new Random().Next(1, int.MaxValue));
             user.SetGameInfo(acc, seed, world);
 
-            user.SendPacket(PacketId.MAPINFO, MapInfo.Write(user,
+            MapInfo.Write(user.Network,
                 world.Map.Width,
                 world.Map.Height,
                 world.Config.Name,
@@ -88,7 +88,7 @@ namespace GameServer.Game.Network.Messaging.Incoming
                 seed,
                 world.Config.Background,
                 world.Config.AllowTeleport,
-                world.Config.ShowDisplays));
+                world.Config.ShowDisplays);
         }
 
         public override string ToString()

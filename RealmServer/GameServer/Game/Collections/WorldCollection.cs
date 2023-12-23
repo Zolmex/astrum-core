@@ -21,10 +21,10 @@ namespace GameServer.Game.Collections
                     if (_dict.TryAdd(newWorld.Id, newWorld))
                     {
                         Count++;
-                        _worldNames.TryAdd(newWorld.Name, newWorld);
+                        _worldNames.TryAdd(newWorld.DisplayName, newWorld);
 
                         newWorld.Initialize();
-                        _log.Info($"World {newWorld.Name}({newWorld.Id}) added.");
+                        _log.Info($"World {newWorld.DisplayName}({newWorld.Id}) added.");
                     }
 
             while (_drops.TryDequeue(out var oldWorldId))
@@ -32,10 +32,10 @@ namespace GameServer.Game.Collections
                     if (_dict.Remove(oldWorldId, out var oldWorld))
                     {
                         Count--;
-                        _worldNames.Remove(oldWorld.Name, out _);
+                        _worldNames.Remove(oldWorld.DisplayName, out _);
 
                         oldWorld.Dispose();
-                        _log.Info($"World {oldWorld.Name}({oldWorld.Id}) removed.");
+                        _log.Info($"World {oldWorld.DisplayName}({oldWorld.Id}) removed.");
                     }
         }
 

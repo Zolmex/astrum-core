@@ -7,6 +7,8 @@ import com.company.assembleegameclient.parameters.Parameters;
 import com.company.assembleegameclient.ui.options.Options;
 import com.company.util.KeyCodes;
 
+import flash.display.DisplayObject;
+
 import flash.display.Stage;
 import flash.display.StageDisplayState;
 import flash.events.Event;
@@ -55,7 +57,7 @@ public class MapUserInput {
     private var usePotionSignal:UsePotionSignal;
     private var potionInventoryModel:PotionInventoryModel;
     private var tabStripModel:TabStripModel;
-    private var layers:Layers;
+    public var layers:Layers;
 
     public function MapUserInput(gs:GameSprite) {
         super();
@@ -203,12 +205,17 @@ public class MapUserInput {
     }
 
     private function onMouseWheel(event:MouseEvent) : void {
+        var stage:DisplayObject = WebMain.STAGE;
         if (event.ctrlKey) {
             if(event.delta > 0) {
-                Parameters.data_.mScale = Math.min(Parameters.data_.mScale + 0.05, 2);
+                Parameters.data_.mscale = Math.min(Parameters.data_.mscale + 0.1, 5);
+                Parameters.save();
+                stage.dispatchEvent(new Event(Event.RESIZE));
             }
             else {
-                Parameters.data_.mScale = Math.max(Parameters.data_.mScale - 0.05, 0.5);
+                Parameters.data_.mscale = Math.max(Parameters.data_.mscale - 0.1, 0.5);
+                Parameters.save();
+                stage.dispatchEvent(new Event(Event.RESIZE));
             }
             return;
         }

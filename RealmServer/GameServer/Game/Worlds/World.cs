@@ -11,7 +11,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Timers;
-using Common.Resources.Config;
 
 namespace GameServer.Game.Worlds
 {
@@ -23,10 +22,7 @@ namespace GameServer.Game.Worlds
         public const int UNBLOCKED_SIGHT = 0;
 
         public int Id { get; set; }
-        public string Name { get; protected set; }
-
-        public Thread LogicThread { get; private set; }
-        public LogicTicker Logic { get; }
+        public string DisplayName { get; protected set; }
 
         public bool Disposed { get; private set; }
         public bool Deleted { get; private set; }
@@ -43,7 +39,8 @@ namespace GameServer.Game.Worlds
         public readonly PlayerCollection Players;
         public readonly SmartCollection<Entity> ActiveEntities;
 
-        private readonly object _playerTickLock = new object();
+        private readonly object _updateLock = new object();
+        private event Action _update;
         private event Action<Player> _playerTick;
 
         protected readonly Logger _log;
@@ -55,10 +52,9 @@ namespace GameServer.Game.Worlds
             _log = new Logger(GetType());
 
             Id = worldId == 0 ? Interlocked.Increment(ref _nextWorldId) : worldId;
-            Name = name;
+            DisplayName = name;
             MapId = mapId;
             Config = WorldLibrary.WorldConfigs[name];
-            Logic = new LogicTicker(this);
 
             Entities = new EntityCollection();
             Characters = new CharacterCollection();
@@ -72,15 +68,6 @@ namespace GameServer.Game.Worlds
             LoadMap(Config.Name, MapId);
 
             _startTime = RealmManager.GlobalTime.TotalElapsedMs;
-
-            if (Config.LongLasting)
-            {
-                _startTime = 0;
-
-                LogicThread = new Thread(() => Logic.Run(GameServerConfig.Config.MsPT));
-                LogicThread.Name = $"[{Id}]{Name}";
-                LogicThread.Start();
-            }
         }
 
         public void LoadMap(string mapName, int mapId)
@@ -140,6 +127,12 @@ namespace GameServer.Game.Worlds
             Characters.Update();
             Enemies.Update();
             Players.Update();
+
+            lock (_updateLock)
+            {
+                _update?.Invoke();
+                _update = null;
+            }
         }
 
         public virtual void Tick(RealmTime time)
@@ -187,14 +180,11 @@ namespace GameServer.Game.Worlds
                 var plr = kvp.Value;
                 if (!plr.Dead)
                 {
-                    lock (_playerTickLock)
-                        _playerTick?.Invoke(plr);
+                    _playerTick?.Invoke(plr);
                     plr.Tick(time);
                 }
             });
-
-            lock (_playerTickLock)
-                _playerTick = null;
+            _playerTick = null;
 
             ActiveEntities.Clear();
         }
@@ -277,10 +267,15 @@ namespace GameServer.Game.Worlds
             return ret;
         }
 
+        public void OnUpdate(Action act)
+        {
+            lock (_updateLock)
+                _update += act;
+        }
+
         public void BroadcastAll(Action<Player> act)
         {
-            lock (_playerTickLock)
-                _playerTick += act;
+            OnUpdate(() => _playerTick += act);
         }
 
         public void Delete()

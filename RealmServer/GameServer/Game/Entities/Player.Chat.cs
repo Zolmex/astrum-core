@@ -20,62 +20,50 @@ namespace GameServer.Game.Entities
 
         public void SendInfo(string text)
         {
-            User.SendPacket(PacketId.TEXT, Text.Write(User,
+            Text.Write(User.Network,
                 "",
                 0,
                 -1,
                 (byte)0,
                 null,
-                text));
+                text);
         }
 
         public void SendError(string text)
         {
-            User.SendPacket(PacketId.TEXT, Text.Write(User,
+            Text.Write(User.Network,
                 "*Error*",
                 0,
                 -1,
                 (byte)0,
                 null,
-                text));
+                text);
         }
 
         public void SendHelp(string text)
         {
-            User.SendPacket(PacketId.TEXT, Text.Write(User,
+            Text.Write(User.Network,
                 "*Help*",
                 0,
                 -1,
                 (byte)0,
                 null,
-                text));
+                text);
         }
 
         public void SendEnemy(Entity entity, string text)
         {
-            User.SendPacket(PacketId.TEXT, Text.Write(User,
-                $"#{entity.Desc.DisplayName}",
-                entity.Id,
-                -1,
-                (byte)3,
-                null,
-                text));
+            Text.Write(User.Network, $"#{entity.Desc.DisplayName}", entity.Id, -1, (byte)3, null, text);
         }
 
         public void SendEnemy(string name, string text)
         {
-            User.SendPacket(PacketId.TEXT, Text.Write(User,
-                $"#{name}",
-                -1,
-                -1,
-                (byte)3,
-                null,
-                text));
+            Text.Write(User.Network, $"#{name}", -1, -1, (byte)3, null, text);
         }
 
         public void Speak(string text)
         {
-            if (!ValidateSpeak(World.Logic.Time, text))
+            if (!ValidateSpeak(RealmManager.GlobalTime, text))
                 return;
 
             if (text.StartsWith('/'))
@@ -95,13 +83,7 @@ namespace GameServer.Game.Entities
             {
                 var user = kvp.Value.User;
                 if (!user.Account.IgnoredIds?.Contains(acc.AccountId) ?? true)
-                    user.SendPacket(PacketId.TEXT, Text.Write(user,
-                        acc.Admin ? $"@{acc.Name}" : acc.Name,
-                        Id,
-                        NumStars,
-                        (byte)5,
-                        null,
-                        text));
+                    Text.Write(user.Network, acc.Admin ? $"@{acc.Name}" : acc.Name, Id, NumStars, (byte)5, null, text);
             }
         }
 

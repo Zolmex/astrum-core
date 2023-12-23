@@ -40,9 +40,9 @@ namespace GameServer.Game.Chat.Commands.AdminCommands
 
             var reconList = ApplyTo(args, player);
             foreach (var plr in reconList)
-                plr.User.SendPacket(PacketId.GOTO, Goto.Write(player.User,
+                Goto.Write(plr.User.Network,
                     realmEvent.Position
-                    ));
+                    );
         }
     }
 }

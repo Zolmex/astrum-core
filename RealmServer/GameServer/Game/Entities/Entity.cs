@@ -13,6 +13,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using System.Threading;
 using GameServer.Game.Worlds;
+using GameServer.Game.Collections;
 
 namespace GameServer.Game.Entities
 {
@@ -39,10 +40,12 @@ namespace GameServer.Game.Entities
         public World World { get; private set; }
         public bool Dead { get; private set; }
 
+        protected bool _initialized;
         public WorldPosData Position;
         public readonly bool IsPlayer;
         public event Action<Entity> DeathEvent;
         protected readonly object _deathLock = new object();
+        protected readonly object _dmgLock = new object();
 
         public Entity(ushort type)
         {
@@ -94,6 +97,7 @@ namespace GameServer.Game.Entities
         public virtual void Initialize()
         {
             LoadStats();
+            _initialized = true;
         }
 
         protected virtual void LoadStats()
@@ -104,8 +108,11 @@ namespace GameServer.Game.Entities
             Size = Desc.MaxSize != 0 ? _random.Next(Desc.MinSize, Desc.MaxSize) : Desc.Size;
         }
 
-        public virtual void Move(float posX, float posY)
+        public virtual bool Move(float posX, float posY)
         {
+            if (Dead)
+                return false;
+
             Position.X = posX;
             Position.Y = posY;
 
@@ -122,6 +129,7 @@ namespace GameServer.Game.Entities
             }
 
             Stats.UpdatePosition();
+            return true;
         }
 
         public virtual void LeaveWorld()
@@ -139,8 +147,47 @@ namespace GameServer.Game.Entities
             }
         }
 
+        public void ProjectileHit(Character from, int bulletId)
+        {
+            if (from.Dead)
+                return;
+
+            if (bulletId > 255)
+                return;
+
+            var proj = from.Projectiles[bulletId];
+            if (proj == null || proj.Dead)
+            {
+                var message = proj == null ? $"BulletId:{bulletId}" : $"TimeAlive:{proj.TimeAlive} TTL:{proj.TTL}";
+                _log.Warn($"PROJ HIT FAILED: {message}");
+                return;
+            }
+
+            Damage(proj.Damage);
+            proj.HitAdd(this);
+
+            if (HP <= 0)
+                Death();
+        }
+
+        public void Damage(int baseDamage)
+        {
+            int damage = baseDamage;
+
+            //apply dmg reductions, dmg modifiers, etc
+
+            lock (_dmgLock)
+                HP -= damage;
+        }
+
+        public virtual void Death()
+        {
+            LeaveWorld();
+        }
+
         public virtual void Dispose()
         {
+            Tile = null;
             World = null;
             Stats.Clear();
         }

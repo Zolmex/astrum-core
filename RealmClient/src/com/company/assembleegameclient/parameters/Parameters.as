@@ -162,8 +162,14 @@ public class Parameters {
         setDefault("hpBars", true)
         setDefault("quality", true);
         setDefault("cursor", "4");
-        setDefault("mScale", 1.0);
+        setDefault("mscale", 1);
         setDefault("chatScaling", 1.0);
+        setDefault("hideList", 0);
+        setDefault("allyShotsList", 0);
+        setDefault("allyDamageList", 0);
+        setDefault("allyNotifsList", 0);
+        setDefault("allyParticlesList", 0);
+        setDefault("allyEntitiesList", 0);
     }
 }
 }

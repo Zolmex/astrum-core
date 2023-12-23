@@ -18,13 +18,14 @@ namespace GameServer.Game.Network.Messaging.Outgoing
 
         public override PacketId ID => PacketId.MAPINFO;
 
-        public static StreamWriteInfo Write(User user, int mapWidth, int mapHeight, string name, string displayName, uint seed, int background, bool allowPlayerTeleport, bool showDisplays)
+        public static void Write(NetworkHandler network, int mapWidth, int mapHeight, string name, string displayName, uint seed, int background, bool allowPlayerTeleport, bool showDisplays)
         {
-            var pkt = user.GetPacket(PacketId.MAPINFO);
-            var wtr = pkt.Writer;
-            lock (pkt)
+            var state = network.SendState;
+            var wtr = state.Writer;
+            lock (state)
             {
-                var offset = (int)wtr.BaseStream.Position;
+                var begin = state.PacketBegin();
+
                 wtr.Write(mapWidth);
                 wtr.Write(mapHeight);
                 wtr.WriteUTF(name);
@@ -33,8 +34,8 @@ namespace GameServer.Game.Network.Messaging.Outgoing
                 wtr.Write(background);
                 wtr.Write(allowPlayerTeleport);
                 wtr.Write(showDisplays);
-                var length = (int)wtr.BaseStream.Position - offset;
-                return new StreamWriteInfo(offset, length);
+
+                state.PacketEnd(begin, PacketId.MAPINFO);
             }
         }
 

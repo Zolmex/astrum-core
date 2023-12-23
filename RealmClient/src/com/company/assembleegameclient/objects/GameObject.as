@@ -49,7 +49,7 @@ import kabam.rotmg.stage3D.GraphicsFillExtra;
 import kabam.rotmg.stage3D.Object3D.Object3DStage3D;
 
 public class GameObject extends BasicObject {
-    
+
     protected static const PAUSED_FILTER:ColorMatrixFilter = new ColorMatrixFilter(MoreColorUtil.greyscaleFilterMatrix);
     public static const ATTACK_PERIOD:int = 500;
     public static const DEFAULT_HP_BAR_Y_OFFSET:int = 5;
@@ -675,7 +675,8 @@ public class GameObject extends BasicObject {
         return this.hallucinatingTexture_;
     }
 
-    protected function getTexture(camera:Camera, time:int):BitmapData {
+    protected function getTexture(camera:Camera, time:int) : BitmapData
+    {
         var p:Number = NaN;
         var action:int = 0;
         var image:MaskedImage = null;
@@ -686,64 +687,87 @@ public class GameObject extends BasicObject {
         var texture:BitmapData = this.texture_;
         var size:int = this.size_;
         var mask:BitmapData = null;
-        if (this.animatedChar_ != null) {
+        if(this.animatedChar_ != null)
+        {
             p = 0;
             action = AnimatedChar.STAND;
-            if (time < this.attackStart_ + ATTACK_PERIOD) {
-                if (!this.props_.dontFaceAttacks_) {
+            if(time < this.attackStart_ + ATTACK_PERIOD)
+            {
+                if(!this.props_.dontFaceAttacks_)
+                {
                     this.facing_ = this.attackAngle_;
                 }
                 p = (time - this.attackStart_) % ATTACK_PERIOD / ATTACK_PERIOD;
                 action = AnimatedChar.ATTACK;
             }
-            else if (this.direction_.x != 0 || this.direction_.y != 0) {
+            else if(this.direction_.x != 0 || this.direction_.y != 0)
+            {
                 walkPer = 0.5 / (this.direction_.length * 4);
                 walkPer = walkPer + (400 - walkPer % 400);
-                if (this.direction_.x != 0 || this.direction_.y != 0) {
-                    this.facing_ = Math.atan2(this.direction_.y, this.direction_.x);
+                if(this.direction_.x != 0 || this.direction_.y != 0)
+                {
+                    this.facing_ = Math.atan2(this.direction_.y,this.direction_.x);
                     action = AnimatedChar.WALK;
                 }
-                else {
+                else
+                {
                     action = AnimatedChar.STAND;
                 }
                 p = time % walkPer / walkPer;
             }
-            image = this.animatedChar_.imageFromFacing(this.facing_, camera, action, p);
+            image = this.animatedChar_.imageFromFacing(this.facing_,camera,action,p);
             texture = image.image_;
             mask = image.mask_;
         }
-        else if (this.animations_ != null) {
+        else if(this.animations_ != null)
+        {
             animTexture = this.animations_.getTexture(time);
-            if (animTexture != null) {
+            if(animTexture != null)
+            {
                 texture = animTexture;
             }
         }
-        if (this.props_.drawOnGround_ || this.obj3D_ != null) {
+        if(this.props_.drawOnGround_ || this.obj3D_ != null)
+        {
             return texture;
         }
-        if (camera.isHallucinating_) {
-            w = texture == null ? int(8) : int(texture.width);
+        if(this.obj3D_ != null){
+            if(Parameters.isGpuRender()){
+                texture = TextureRedrawer.redraw(texture, this.size_, true, 0);
+                return texture
+            }
+            return texture
+        }
+        if(camera.isHallucinating_)
+        {
+            w = texture == null?int(8):int(texture.width);
             texture = this.getHallucinatingTexture();
             mask = null;
-            size = this.size_ * Math.min(1.5, w / texture.width);
+            size = this.size_ * Math.min(1.5,w / texture.width);
         }
-        if (this.isStasis()) {
-            texture = CachingColorTransformer.filterBitmapData(texture, PAUSED_FILTER);
+        if(this.isStasis())
+        {
+            texture = CachingColorTransformer.filterBitmapData(texture,PAUSED_FILTER);
         }
-        if (this.tex1Id_ == 0 && this.tex2Id_ == 0) {
-            texture = TextureRedrawer.redraw(texture, size, false, 0);
+        if(this.tex1Id_ == 0 && this.tex2Id_ == 0)
+        {
+            texture = TextureRedrawer.redraw(texture,size,false,0);
         }
-        else {
+        else
+        {
             newTexture = null;
-            if (this.texturingCache_ == null) {
+            if(this.texturingCache_ == null)
+            {
                 this.texturingCache_ = new Dictionary();
             }
-            else {
+            else
+            {
                 newTexture = this.texturingCache_[texture];
             }
-            if (newTexture == null) {
-                newTexture = TextureRedrawer.resize(texture, mask, size, false, this.tex1Id_, this.tex2Id_);
-                newTexture = GlowRedrawer.outlineGlow(newTexture, 0);
+            if(newTexture == null)
+            {
+                newTexture = TextureRedrawer.resize(texture,mask,size,false,this.tex1Id_,this.tex2Id_);
+                newTexture = GlowRedrawer.outlineGlow(newTexture,0);
                 this.texturingCache_[texture] = newTexture;
             }
             texture = newTexture;
@@ -816,10 +840,13 @@ public class GameObject extends BasicObject {
         }
     }
 
-    override public function draw(graphicsData:Vector.<IGraphicsData>, camera:Camera, time:int):void {
-        var texture:BitmapData = this.getTexture(camera, time);
-        if (this.props_.drawOnGround_) {
-            if (square_.faces_.length == 0) {
+    override public function draw(graphicsData:Vector.<IGraphicsData>, camera:Camera, time:int) : void
+    {
+        var texture:BitmapData = this.getTexture(camera,time);
+        if(this.props_.drawOnGround_)
+        {
+            if(square_.faces_.length == 0)
+            {
                 return;
             }
             this.path_.data = square_.faces_[0].face_.vout_;
@@ -831,69 +858,76 @@ public class GameObject extends BasicObject {
             graphicsData.push(GraphicsUtil.END_FILL);
             return;
         }
-        if (this.obj3D_ != null) {
-            if (!Parameters.GPURenderFrame) {
-                this.obj3D_.draw(graphicsData, camera, this.props_.color_, texture);
-                return;
-            }
-            else {
-                graphicsData.push(null);
-                return;
-            }
+        var sink:int = square_.sink_ + this.sinkLevel_;
+        if (this.obj3D_ != null && !Parameters.isGpuRender()) {
+            this.obj3D_.draw(graphicsData, camera, this.props_.color_, texture);
+            return;
         }
         var w:int = texture.width;
         var h:int = texture.height;
         var h2:int = square_.sink_ + this.sinkLevel_;
-        if (h2 > 0 && (this.flying_ || square_.obj_ != null && square_.obj_.props_.protectFromSink_)) {
+        if(h2 > 0 && (this.flying_ || square_.obj_ != null && square_.obj_.props_.protectFromSink_))
+        {
             h2 = 0;
         }
-        if (Parameters.GPURenderFrame) {
-            if (h2 != 0) {
-                GraphicsFillExtra.setSinkLevel(this.bitmapFill_, Math.max(((h2 / h) * 1.65) - 0.02, 0));
+        if(Parameters.GPURenderFrame)
+        {
+            if(h2 != 0)
+            {
+                GraphicsFillExtra.setSinkLevel(this.bitmapFill_,Math.max(((h2 / h) * 1.65) - 0.02,0));
                 h2 = -h2 + 0.02;
             }
-            else if (h2 == 0 && GraphicsFillExtra.getSinkLevel(this.bitmapFill_) != 0) {
+            else if(h2 == 0 && GraphicsFillExtra.getSinkLevel(this.bitmapFill_) != 0)
+            {
                 GraphicsFillExtra.clearSink(this.bitmapFill_);
             }
         }
         this.vS_.length = 0;
-        this.vS_.push(posS_[3] - w / 2, posS_[4] - h + h2, posS_[3] + w / 2, posS_[4] - h + h2, posS_[3] + w / 2, posS_[4], posS_[3] - w / 2, posS_[4]);
+        this.vS_.push(posS_[3] - w / 2,posS_[4] - h + h2,posS_[3] + w / 2,posS_[4] - h + h2,posS_[3] + w / 2,posS_[4],posS_[3] - w / 2,posS_[4]);
         this.path_.data = this.vS_;
 
-        if (this.flash_ != null) {
-            if (!this.flash_.doneAt(time)) {
-                if (Parameters.GPURenderFrame) {
-                    this.flash_.applyGPUTextureColorTransform(texture, time);
+        if(this.flash_ != null)
+        {
+            if(!this.flash_.doneAt(time))
+            {
+                if(Parameters.GPURenderFrame)
+                {
+                    this.flash_.applyGPUTextureColorTransform(texture,time);
                 }
-                else {
-                    texture = this.flash_.apply(texture, time);
+                else
+                {
+                    texture = this.flash_.apply(texture,time);
                 }
             }
-            else {
+            else
+            {
                 this.flash_ = null;
             }
         }
 
         this.bitmapFill_.bitmapData = texture;
         this.fillMatrix_.identity();
-        this.fillMatrix_.translate(this.vS_[0], this.vS_[1]);
+        this.fillMatrix_.translate(this.vS_[0],this.vS_[1]);
         this.bitmapFill_.matrix = this.fillMatrix_;
         graphicsData.push(this.bitmapFill_);
         graphicsData.push(this.path_);
         graphicsData.push(GraphicsUtil.END_FILL);
-        if (this.condition_) {
-            this.drawConditionIcons(graphicsData, camera, time);
+        if(this.condition_)
+        {
+            this.drawConditionIcons(graphicsData,camera,time);
         }
-        if (this.props_.showName_ && this.name_ != null && this.name_.length != 0) {
-            this.drawName(graphicsData, camera);
+        if(this.props_.showName_ && this.name_ != null && this.name_.length != 0)
+        {
+            this.drawName(graphicsData,camera);
         }
 
-        if (Parameters.data_.hpBars) {
+        if(Parameters.data_.hpBars)
+        {
             var bDrawHpBar:Boolean = this.props_ && (this.props_.isEnemy_ || this.props_.isPlayer_) && !this.isInvincible() && (this.props_.isPlayer_ || !this.isInvulnerable()) && !this.props_.noMiniMap_;
 
-            if (bDrawHpBar) {
-                this.drawHpBar(graphicsData,
-                        (this.props_.isPlayer_ && this != map_.player_ ? 16 : 0) + DEFAULT_HP_BAR_Y_OFFSET);
+            if (bDrawHpBar)
+            {
+                this.drawHpBar(graphicsData,(this.props_.isPlayer_ && this != map_.player_ ? 16 - sink / 5 : 0) + DEFAULT_HP_BAR_Y_OFFSET);
             }
         }
     }

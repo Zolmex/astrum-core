@@ -6,10 +6,10 @@ namespace GameServer.Game.Network.Messaging
     public abstract class IncomingPacket : Packet
     {
         protected abstract void Handle(User user);
-        public void ReadBody(User user, byte[] body, int offset, int length)
+        public void ReadBody(User user, NetworkReader rdr)
         {
             // Read packet body
-            Read(new NetworkReader(new MemoryStream(body, offset, length)));
+            Read(rdr);
             Handle(user);
         }
         protected abstract void Read(NetworkReader rdr);

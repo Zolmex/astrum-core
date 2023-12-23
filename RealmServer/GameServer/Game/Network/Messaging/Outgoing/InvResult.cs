@@ -2,6 +2,7 @@
 using Common.Utilities;
 using System;
 using System.IO;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GameServer.Game.Network.Messaging.Outgoing
 {
@@ -11,16 +12,17 @@ namespace GameServer.Game.Network.Messaging.Outgoing
 
         public override PacketId ID => PacketId.INVRESULT;
 
-        public static StreamWriteInfo Write(User user, int result)
+        public static void Write(NetworkHandler network, int result)
         {
-            var pkt = user.GetPacket(PacketId.INVRESULT);
-            var wtr = pkt.Writer;
-            lock (pkt)
+            var state = network.SendState;
+            var wtr = state.Writer;
+            lock (state)
             {
-                var offset = (int)wtr.BaseStream.Position;
+                var begin = state.PacketBegin();
+
                 wtr.Write(result);
-                var length = (int)wtr.BaseStream.Position - offset;
-                return new StreamWriteInfo(offset, length);
+
+                state.PacketEnd(begin, PacketId.INVRESULT);
             }
         }
 

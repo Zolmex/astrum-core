@@ -16,19 +16,20 @@ namespace GameServer.Game.Network.Messaging.Outgoing
 
         public override PacketId ID => PacketId.ACCOUNTLIST;
 
-        public static StreamWriteInfo Write(User user, int accListId, int[] accIds)
+        public static void Write(NetworkHandler network, int accListId, int[] accIds)
         {
-            var pkt = user.GetPacket(PacketId.ACCOUNTLIST);
-            var wtr = pkt.Writer;
-            lock (pkt)
+            var state = network.SendState;
+            var wtr = state.Writer;
+            lock (state)
             {
-                var offset = (int)wtr.BaseStream.Position;
+                var begin = state.PacketBegin();
+
                 wtr.Write(accListId);
                 wtr.Write((short)accIds.Length);
                 foreach (var id in accIds)
                     wtr.Write(id);
-                var length = (int)wtr.BaseStream.Position - offset;
-                return new StreamWriteInfo(offset, length);
+
+                state.PacketEnd(begin, PacketId.ACCOUNTLIST);
             }
         }
 

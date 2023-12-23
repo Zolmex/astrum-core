@@ -19,7 +19,7 @@ namespace GameServer.Game.Worlds
         public Realm()
             : base(REALM, -1)
         {
-            Name = GetRealmName();
+            DisplayName = GetRealmName();
 
             Oryx = new Oryx(this);
         }
@@ -29,7 +29,7 @@ namespace GameServer.Game.Worlds
             base.Initialize();
 
             Oryx.Initialize();
-            RealmManager.OnRealmAdded(Name);
+            RealmManager.OnRealmAdded(DisplayName);
         }
 
         public override void Tick(RealmTime time)

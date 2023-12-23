@@ -40,17 +40,14 @@ namespace GameServer.Game.Chat.Commands.AdminCommands
                         break;
                 }
             }
-
+             
             if (targets.Count == 0)
-            {
-                player.SendError("There is no event alive at the moment.");
                 return;
-            }
 
             foreach (var target in targets)
-                target.User.SendPacket(PacketId.GOTO, Goto.Write(target.User,
+                Goto.Write(target.User.Network,
                     player.Position
-                    ));
+                    );
         }
     }
 }

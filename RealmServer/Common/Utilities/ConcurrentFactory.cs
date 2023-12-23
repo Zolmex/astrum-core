@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Threading;
 
 namespace Common.Utilities
 {
@@ -10,7 +11,7 @@ namespace Common.Utilities
 
         public ConcurrentFactory(int size, params object[] args)
         {
-            _count = size;
+            Interlocked.Exchange(ref _count, size);
             _pool = new ConcurrentQueue<T>();
             for (int i = 0; i < size; i++)
                 _pool.Enqueue((T)Activator.CreateInstance(typeof(T), args));
@@ -21,13 +22,13 @@ namespace Common.Utilities
             if (_count == 0 || !_pool.TryDequeue(out T ret))
                 return default;
 
-            _count--;
+            Interlocked.Decrement(ref _count);
             return ret;
         }
 
         public void Push(T obj)
         {
-            _count++;
+            Interlocked.Increment(ref _count);
             _pool.Enqueue(obj);
         }
     }

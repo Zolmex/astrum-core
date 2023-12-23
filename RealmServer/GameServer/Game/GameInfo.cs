@@ -25,9 +25,24 @@ namespace GameServer.Game
         public Player Player { get; private set; }
         public GameState State { get; private set; }
 
+        public byte AllyShots { get; private set; }
+        public byte AllyDamage { get; private set; }
+        public byte AllyNotifs { get; private set; }
+        public byte AllyParticles { get; private set; }
+        public byte AllyEntities { get; private set; }
+
         public GameInfo(User user)
         {
             User = user;
+        }
+
+        public void AllySettings(byte allyShots, byte allyDamage, byte allyNotifs, byte allyParticles, byte allyEntities)
+        {
+            AllyShots = allyShots;
+            AllyDamage = allyDamage;
+            AllyNotifs = allyNotifs;
+            AllyParticles = allyParticles;
+            AllyEntities = allyEntities;
         }
 
         public void SetWorld(World world)

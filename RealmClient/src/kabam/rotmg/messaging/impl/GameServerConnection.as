@@ -149,6 +149,7 @@ import kabam.rotmg.ui.view.NotEnoughGoldDialog;
 import org.swiftsuspenders.Injector;
 
 import robotlegs.bender.framework.api.ILogger;
+import kabam.rotmg.messaging.impl.outgoing.OptionsChanged;
 
 public class GameServerConnection {
 
@@ -201,6 +202,7 @@ public class GameServerConnection {
     public static const PLAYSOUND:int = 46;
     public static const RESKIN:int = 47;
     public static const GOTOACK:int = 48;
+    public static const OPTIONS_CHANGED:int = 49;
 
     public static var instance:GameServerConnection;
 
@@ -320,6 +322,7 @@ public class GameServerConnection {
         messages.map(JOINGUILD).toMessage(JoinGuild);
         messages.map(CHANGEGUILDRANK).toMessage(ChangeGuildRank);
         messages.map(EDITACCOUNTLIST).toMessage(EditAccountList);
+        messages.map(OPTIONS_CHANGED).toMessage(OptionsChanged);
         messages.map(FAILURE).toMessage(Failure).toMethod(this.onFailure);
         messages.map(CREATE_SUCCESS).toMessage(CreateSuccess).toMethod(this.onCreateSuccess);
         messages.map(TEXT).toMessage(Text).toMethod(this.onText);
@@ -395,6 +398,7 @@ public class GameServerConnection {
         messages.unmap(ENEMYSHOOT);
         messages.unmap(INVITEDTOGUILD);
         messages.unmap(PLAYSOUND);
+        messages.unmap(OPTIONS_CHANGED);
     }
 
     public function getNextDamage(minDamage:uint, maxDamage:uint):uint {
@@ -691,6 +695,8 @@ public class GameServerConnection {
     private function onAllyShoot(allyShoot:AllyShoot):void {
         var i:int;
         var owner:GameObject = this.gs_.map.goDict_[allyShoot.ownerId_];
+        if (owner == null)
+            return;
         var weaponXML:XML = ObjectLibrary.xmlLibrary_[allyShoot.containerType_];
         var arcGap:Number = (Boolean(weaponXML.hasOwnProperty("ArcGap")) ? Number(weaponXML.ArcGap) : 11.25) * Trig.toRadians;
         var numShots:int = Boolean(weaponXML.hasOwnProperty("NumProjectiles")) ? int(int(weaponXML.NumProjectiles)) : int(1);
@@ -1256,6 +1262,16 @@ public class GameServerConnection {
         GroundLibrary.parseFromXML(extraXML);
         ObjectLibrary.parseFromXML(extraXML);
         ObjectLibrary.parseFromXML(extraXML);
+    }
+
+    public function optionsChanged():void {
+        var packet:OptionsChanged = this.messages.require(OPTIONS_CHANGED) as OptionsChanged;
+        packet.allyShots = Parameters.data_.allyShotsList;
+        packet.allyDamage = Parameters.data_.allyDamageList;
+        packet.allyNotifs = Parameters.data_.allyNotifsList;
+        packet.allyParticles = Parameters.data_.allyParticlesList;
+        packet.allyEntities = Parameters.data_.allyEntitiesList;
+        this.serverConnection.sendMessage(packet);
     }
 
     private function onMapInfo(mapInfo:MapInfo):void {

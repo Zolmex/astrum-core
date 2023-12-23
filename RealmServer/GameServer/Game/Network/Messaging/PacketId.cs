@@ -50,6 +50,7 @@
         CHANGEGUILDRANK,
         PLAYSOUND,
         RESKIN,
-        GOTOACK
+        GOTOACK,
+        OPTIONS_CHANGED
     }
 }

@@ -79,15 +79,15 @@ namespace GameServer.Game
 
             GameInfo.Load(chr, world);
 
-            SendPacket(PacketId.CREATESUCCESS, CreateSuccess.Write(this,
+            CreateSuccess.Write(Network,
                 GameInfo.Player.Id,
-                chr.CharId));
-            SendPacket(PacketId.ACCOUNTLIST, AccountList.Write(this,
+                chr.CharId);
+            AccountList.Write(Network,
                 AccountList.Locked,
-                Account.LockedIds ?? new int[0]));
-            SendPacket(PacketId.ACCOUNTLIST, AccountList.Write(this,
+                Account.LockedIds ?? new int[0]);
+            AccountList.Write(Network,
                 AccountList.Ignored,
-                Account.IgnoredIds ?? new int[0]));
+                Account.IgnoredIds ?? new int[0]);
         }
 
         private void Unload()
@@ -107,19 +107,9 @@ namespace GameServer.Game
             Random = null;
         }
 
-        public void SendPacket(PacketId packetId, StreamWriteInfo writeInfo)
-        {
-            Network.Send(packetId, writeInfo);
-        }
-
-        public OutgoingPacket GetPacket(PacketId packetId)
-        {
-            return Network.GetPacket(packetId);
-        }
-
         public async void SendFailure(int errorId = Failure.DEFAULT, string message = Failure.DEFAULT_MESSAGE)
         {
-            Network.Send(PacketId.FAILURE, Failure.Write(this, errorId, message));
+            Failure.Write(Network, errorId, message);
 
             await Task.Delay(1000);
             Disconnect(message, DisconnectReason.Failure);
@@ -149,9 +139,9 @@ namespace GameServer.Game
 
             Unload(); // Begin reconnect process, kill player entity and set gamestate to idle
 
-            SendPacket(PacketId.RECONNECT, Reconnect.Write(this,
+            Reconnect.Write(Network,
                 world.Id
-                ));
+                );
         }
     }
 }

@@ -12,17 +12,18 @@ namespace GameServer.Game.Network.Messaging.Outgoing
 
         public override PacketId ID => PacketId.CREATESUCCESS;
 
-        public static StreamWriteInfo Write(User user, int objectId, int charId)
+        public static void Write(NetworkHandler network, int objectId, int charId)
         {
-            var pkt = user.GetPacket(PacketId.CREATESUCCESS);
-            var wtr = pkt.Writer;
-            lock (pkt)
+            var state = network.SendState;
+            var wtr = state.Writer;
+            lock (state)
             {
-                var offset = (int)wtr.BaseStream.Position;
+                var begin = state.PacketBegin();
+
                 wtr.Write(objectId);
                 wtr.Write(charId);
-                var length = (int)wtr.BaseStream.Position - offset;
-                return new StreamWriteInfo(offset, length);
+
+                state.PacketEnd(begin, PacketId.CREATESUCCESS);
             }
         }
 

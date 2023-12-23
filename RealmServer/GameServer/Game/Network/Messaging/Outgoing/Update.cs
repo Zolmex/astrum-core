@@ -16,13 +16,14 @@ namespace GameServer.Game.Network.Messaging.Outgoing
 
         public override PacketId ID => PacketId.UPDATE;
 
-        public static StreamWriteInfo Write(User user, List<WorldTile> tiles, List<ObjectData> newEntities, List<ObjectDropData> oldEntities)
+        public static void Write(NetworkHandler network, List<WorldTile> tiles, List<ObjectData> newEntities, List<ObjectDropData> oldEntities)
         {
-            var pkt = user.GetPacket(PacketId.UPDATE);
-            var wtr = pkt.Writer;
-            lock (pkt)
+            var state = network.SendState;
+            var wtr = state.Writer;
+            lock (state)
             {
-                var offset = (int)wtr.BaseStream.Position;
+                var begin = state.PacketBegin();
+
                 wtr.Write((short)tiles.Count);
                 for (var i = 0; i < tiles.Count; i++)
                     tiles[i].Write(wtr);
@@ -32,8 +33,8 @@ namespace GameServer.Game.Network.Messaging.Outgoing
                 wtr.Write((short)oldEntities.Count);
                 for (var i = 0; i < oldEntities.Count; i++)
                     oldEntities[i].Write(wtr);
-                var length = (int)wtr.BaseStream.Position - offset;
-                return new StreamWriteInfo(offset, length);
+
+                state.PacketEnd(begin, PacketId.UPDATE);
             }
         }
 

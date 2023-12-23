@@ -585,12 +585,33 @@ public class Player extends Character {
     }
 
     override public function draw(graphicsData:Vector.<IGraphicsData>, camera:Camera, time:int):void {
+        if (this.isInHideList(Parameters.data_.hideList)) {
+            return;
+        }
+
         super.draw(graphicsData, camera, time);
         if (this != map_.player_ && this.name_ != null && this.name_.length != 0) {
             drawName(graphicsData, camera);
         }
         else if (this.oxygen_ >= 0) {
             this.drawBreathBar(graphicsData, time);
+        }
+    }
+
+    public function isInHideList(hideList:int):Boolean {
+        switch (hideList) {
+            case 0:
+                return false;
+            case 1:
+                return this != this.map_.player_;
+            case 2:
+                return this != this.map_.player_ && !this.starred_;
+            case 3:
+                return this != this.map_.player_ && !this.isFellowGuild_;
+            case 4:
+                return this != this.map_.player_ && !this.starred_ && !this.isFellowGuild_;
+            default:
+                return false;
         }
     }
 

@@ -92,7 +92,7 @@ namespace Common.Resources.Xml
 
         public static TileDesc Id2Tile(string id)
         {
-            var ret = TileDescs.Values.FirstOrDefault(desc => desc.ObjectId.EqualsIgnoreCase(id));
+            var ret = TileDescs.Values.FirstOrDefault(desc => desc.GroundId.EqualsIgnoreCase(id));
             if (ret == null)
                 _log.Warn($"Tile id not found: {id}");
             return ret;

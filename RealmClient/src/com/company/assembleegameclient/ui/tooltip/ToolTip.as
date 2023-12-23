@@ -1,6 +1,7 @@
 package com.company.assembleegameclient.ui.tooltip
 {
-   import com.company.util.GraphicsUtil;
+import com.company.assembleegameclient.game.GameSprite;
+import com.company.util.GraphicsUtil;
    import flash.display.CapsStyle;
    import flash.display.DisplayObject;
    import flash.display.GraphicsPath;
@@ -43,8 +44,10 @@ package com.company.assembleegameclient.ui.tooltip
       private var path_:GraphicsPath = new GraphicsPath(new Vector.<int>(),new Vector.<Number>());
       
       private const graphicsData_:Vector.<IGraphicsData> = new <IGraphicsData>[lineStyle_,backgroundFill_,path_,GraphicsUtil.END_FILL,GraphicsUtil.END_STROKE];
-      
-      public function ToolTip(background:uint, backgroundAlpha:Number, outline:uint, outlineAlpha:Number, followMouse:Boolean = true)
+
+      private var gs_:GameSprite = null;
+
+      public function ToolTip(background:uint, backgroundAlpha:Number, outline:uint, outlineAlpha:Number, followMouse:Boolean = true, gs:GameSprite = null)
       {
          super();
          this.background_ = background;
@@ -52,6 +55,7 @@ package com.company.assembleegameclient.ui.tooltip
          this.outline_ = outline;
          this.outlineAlpha_ = outlineAlpha;
          this.followMouse_ = followMouse;
+         this.gs_ = gs;
          mouseEnabled = false;
          mouseChildren = false;
          filters = [new DropShadowFilter(0,0,0,1,16,16)];
@@ -103,7 +107,7 @@ package com.company.assembleegameclient.ui.tooltip
             removeEventListener(Event.ENTER_FRAME,this.onEnterFrame);
          }
       }
-      
+
       private function onEnterFrame(event:Event) : void
       {
          this.position();

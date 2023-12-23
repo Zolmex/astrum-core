@@ -39,7 +39,7 @@ namespace GameServer.Game.Entities
         {
             base.Initialize();
 
-            Name = PortalWorld.Name + " (" + PortalWorld.Players.Count;
+            Name = PortalWorld.DisplayName + " (" + PortalWorld.Players.Count;
 
             var maxPlayers = PortalWorld.Config.MaxPlayers;
             if (maxPlayers == -1)
@@ -53,7 +53,7 @@ namespace GameServer.Game.Entities
             if (!base.Tick(time))
                 return false;
 
-            Name = PortalWorld.Name + " (" + PortalWorld.Players.Count;
+            Name = PortalWorld.DisplayName + " (" + PortalWorld.Players.Count;
             var maxPlayers = PortalWorld.Config.MaxPlayers;
             if (maxPlayers == -1)
                 Name += ")";

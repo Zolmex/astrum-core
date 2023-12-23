@@ -47,18 +47,20 @@ package com.company.assembleegameclient.account.ui
       private var path2_:GraphicsPath= new GraphicsPath(new Vector.<int>(),new Vector.<Number>());
       
       private const graphicsData_:Vector.<IGraphicsData> = new <IGraphicsData>[backgroundFill_,path2_,GraphicsUtil.END_FILL,titleFill_,path1_,GraphicsUtil.END_FILL,lineStyle_,path2_,GraphicsUtil.END_STROKE];
-      
-      public function Frame(title:String, leftButton:String, rightButton:String, w:int = 288)
+
+      private var bigTitle:Boolean;
+
+      public function Frame(title:String, leftButton:String, rightButton:String, w:int = 288, bigTitle:Boolean = false)
       {
          this.textInputFields_ = new Vector.<TextInputField>();
          this.navigationLinks_ = new Vector.<ClickableText>();
          super();
          this.w_ = w;
-         this.titleText_ = new SimpleText(12,11776947,false,0,0);
+         this.bigTitle = bigTitle;
+         this.titleText_ = new SimpleText(bigTitle ? 25 : 12,bigTitle ? 0xFFFFFF : 11776947,false,0,0);
          this.titleText_.text = title;
          this.titleText_.updateMetrics();
          this.titleText_.filters = [new DropShadowFilter(0,0,0)];
-         this.titleText_.x = 5;
          this.titleText_.filters = [new DropShadowFilter(0,0,0,0.5,12,12)];
          addChild(this.titleText_);
          this.leftButton_ = new ClickableText(18,true,leftButton);
@@ -70,7 +72,6 @@ package com.company.assembleegameclient.account.ui
          }
          this.rightButton_ = new ClickableText(18,true,rightButton);
          this.rightButton_.buttonMode = true;
-         this.rightButton_.x = this.w_ - this.rightButton_.width - 26;
          addChild(this.rightButton_);
          filters = [new DropShadowFilter(0,0,0,0.5,12,12)];
          addEventListener(Event.ADDED_TO_STAGE,this.onAddedToStage);
@@ -185,6 +186,9 @@ package com.company.assembleegameclient.account.ui
          {
             stage.focus = this.textInputFields_[0].inputText_;
          }
+         this.titleText_.x = bigTitle ? (width / 2 - this.titleText_.width / 2) : 5;
+         this.rightButton_.x = bigTitle ? (width / 2 - this.rightButton_.width / 2) : (this.w_ - this.rightButton_.width - 26);
+
       }
       
       private function onRemovedFromStage(event:Event) : void

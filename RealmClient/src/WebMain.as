@@ -1,7 +1,11 @@
 package {
+import com.company.assembleegameclient.map.Camera;
 import com.company.assembleegameclient.parameters.Parameters;
 import com.company.assembleegameclient.sound.SoundEffectLibrary;
+import com.company.assembleegameclient.ui.constellations.xml.ConstellationsData;
+import com.company.assembleegameclient.ui.constellations.xml.ConstellationsDataStore;
 import com.company.assembleegameclient.util.AssetLoader;
+import com.company.assembleegameclient.util.FileManager;
 import com.company.assembleegameclient.util.StageProxy;
 
 import flash.display.LoaderInfo;
@@ -41,24 +45,42 @@ import robotlegs.bender.extensions.signalCommandMap.SignalCommandMapExtension;
 import robotlegs.bender.framework.api.IContext;
 import robotlegs.bender.framework.api.LogLevel;
 
-[SWF(frameRate="60", backgroundColor="#000000", width="800", height="600")]
+[SWF(frameRate="144", backgroundColor="#000000", width="800", height="600")]
 public class WebMain extends Sprite {
     
     public static var STAGE:Stage;
-    public static var StageWidth:int;
-    public static var StageHeight:int;
-    private var resized_:Boolean;
+    public static var sWidth:Number = 800;
+    public static var sHeight:Number = 600;
 
     protected var context:IContext;
 
     public function WebMain() {
         super();
         if (stage) {
+            stage.addEventListener(Event.RESIZE, this.onStageResize);
             this.setup();
         }
         else {
             addEventListener(Event.ADDED_TO_STAGE, this.onAddedToStage);
         }
+    }
+
+    public function onStageResize(e:Event) : void {
+        if (stage.scaleMode == StageScaleMode.NO_SCALE) {
+            this.scaleX = stage.stageWidth / 800;
+            this.scaleY = stage.stageHeight / 600;
+            this.x = (800 - stage.stageWidth) / 2;
+            this.y = (600 - stage.stageHeight) / 2;
+        } else {
+            this.scaleX = 1;
+            this.scaleY = 1;
+            this.x = 0;
+            this.y = 0;
+        }
+        sWidth = stage.stageWidth;
+        sHeight = stage.stageHeight;
+        Camera.resizeCamera();
+        Stage3DConfig.Dimensions();
     }
 
     private function onAddedToStage(event:Event):void {
@@ -76,35 +98,24 @@ public class WebMain extends Sprite {
         startup.dispatch();
         STAGE = stage;
         STAGE.addEventListener(MouseEvent.RIGHT_CLICK, onRightClick)
-        STAGE.addEventListener(Event.ENTER_FRAME, onEnterFrame);
-        STAGE.addEventListener(Event.RESIZE, updateStageSize);
-        setStageSize();
         UIUtils.toggleQuality(Parameters.data_.quality);
+
+        var xmlData:XML = ConstellationsData.XMLData;
+        ConstellationsDataStore.getInstance().loadConstellationsDataFromXML(xmlData);
+
+        setFileDefaults();
+    }
+
+    private static function setFileDefaults():void {
+        var constTutData:String = FileManager.readFromFile("showConstellationTutorial", "data");
+
+        if (constTutData == null) {
+            FileManager.writeToFile("true", "showConstellationTutorial", "data");
+        }
     }
 
     private static function onRightClick(event:MouseEvent):void {
         //suppress context menu
-    }
-
-    private function onEnterFrame(event:Event) : void
-    {
-        SoundEffectLibrary.clear();
-        if (!resized_){
-            setStageSize();
-        }
-        resized_ = false;
-    }
-
-    private function updateStageSize(event:Event) : void
-    {
-        setStageSize();
-        resized_ = true;
-    }
-
-    private function setStageSize() : void
-    {
-        StageWidth = stage.stageWidth / Parameters.data_.mScale;
-        StageHeight = stage.stageHeight / Parameters.data_.mScale;
     }
 
     private function hackParameters():void {

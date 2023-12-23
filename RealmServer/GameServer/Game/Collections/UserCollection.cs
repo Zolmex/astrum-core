@@ -22,7 +22,8 @@ namespace GameServer.Game.Collections
 
         public void SetAccId(User user, int accId)
         {
-            _userAccIds.TryAdd(accId, user);
+            lock (_dict)
+                _userAccIds.TryAdd(accId, user);
         }
 
         public User GetByAccId(int accId)

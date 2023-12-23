@@ -3,6 +3,7 @@ using Common.Utilities.Net;
 using Common.Utilities;
 using System;
 using System.IO;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace GameServer.Game.Network.Messaging.Outgoing
 {
@@ -20,17 +21,18 @@ namespace GameServer.Game.Network.Messaging.Outgoing
 
         public override PacketId ID => PacketId.FAILURE;
 
-        public static StreamWriteInfo Write(User user, int errorId, string errorDescription)
+        public static void Write(NetworkHandler network, int errorId, string errorDescription)
         {
-            var pkt = user.GetPacket(PacketId.FAILURE);
-            var wtr = pkt.Writer;
-            lock (pkt)
+            var state = network.SendState;
+            var wtr = state.Writer;
+            lock (state)
             {
-                var offset = (int)wtr.BaseStream.Position;
+                var begin = state.PacketBegin();
+
                 wtr.Write(errorId);
                 wtr.WriteUTF(errorDescription);
-                var length = (int)wtr.BaseStream.Position - offset;
-                return new StreamWriteInfo(offset, length);
+
+                state.PacketEnd(begin, PacketId.FAILURE);
             }
         }
 

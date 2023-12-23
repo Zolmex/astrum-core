@@ -309,7 +309,7 @@ namespace Common.Resources.Xml
 
     public class TileDesc
     {
-        public readonly string ObjectId;
+        public readonly string GroundId;
         public readonly ushort GroundType;
         public readonly bool NoWalk;
         public readonly int Damage;
@@ -321,7 +321,7 @@ namespace Common.Resources.Xml
 
         public TileDesc(XElement e, string id, ushort type)
         {
-            ObjectId = id;
+            GroundId = id;
             GroundType = type;
             NoWalk = e.HasElement("NoWalk");
             Damage = e.GetValue<int>("Damage");

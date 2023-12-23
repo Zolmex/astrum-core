@@ -31,9 +31,13 @@ namespace GameServer.Game.Entities
 
         private MapChunk _chunk;
 
-        public override void Move(float posX, float posY)
+        public override bool Move(float posX, float posY)
         {
-            base.Move(posX, posY);
+            if (User.State != ConnectionState.Ready || User.GameInfo.State != GameState.Playing)
+                return false;
+
+            if (!base.Move(posX, posY))
+                return false;
 
             if (_chunk != Tile.Chunk)
             {
@@ -60,6 +64,8 @@ namespace GameServer.Game.Entities
                     for (var cX = _chunk.CX - ACTIVE_RADIUS; cX <= _chunk.CX + ACTIVE_RADIUS; cX++)
                         World.Map.Chunks[cX, cY]?.ActivityUp();
             }
+
+            return true;
         }
 
         private void SendUpdate()
@@ -72,11 +78,11 @@ namespace GameServer.Game.Entities
             GetEntities();
 
             if (_newTiles.Count > 0 || _newEntities.Count > 0 || _oldEntities.Count > 0)
-                User.SendPacket(PacketId.UPDATE, Update.Write(User,
+                Update.Write(User.Network,
                     _newTiles,
                     _newEntities,
                     _oldEntities
-                    ));
+                    );
         }
 
         private void GetNewTiles()
@@ -121,8 +127,8 @@ namespace GameServer.Game.Entities
                 }
             }
 
-            for (var cY = _chunk.CY - ACTIVE_RADIUS; cY <= _chunk.CY + ACTIVE_RADIUS; cY++)
-                for (var cX = _chunk.CX - ACTIVE_RADIUS; cX <= _chunk.CX + ACTIVE_RADIUS; cX++)
+            for (var cY = Tile.Chunk.CY - ACTIVE_RADIUS; cY <= Tile.Chunk.CY + ACTIVE_RADIUS; cY++)
+                for (var cX = Tile.Chunk.CX - ACTIVE_RADIUS; cX <= Tile.Chunk.CX + ACTIVE_RADIUS; cX++)
                 {
                     var chunk = World.Map.Chunks[cX, cY];
                     if (chunk != null)

@@ -1,19 +1,18 @@
 package com.company.assembleegameclient.ui.tooltip
 {
-   import com.company.ui.SimpleText;
+import com.company.assembleegameclient.game.GameSprite;
+import com.company.ui.SimpleText;
    import flash.filters.DropShadowFilter;
    
    public class TextToolTip extends ToolTip
    {
-       
-      
       public var titleText_:SimpleText;
       
       public var tipText_:SimpleText;
       
-      public function TextToolTip(background:uint, outline:uint, title:String, text:String, maxWidth:int)
+      public function TextToolTip(background:uint, outline:uint, title:String, text:String, maxWidth:int, gs:GameSprite = null)
       {
-         super(background,1,outline,1);
+         super(background,1,outline,1,true,gs);
          if(title != null)
          {
             this.titleText_ = new SimpleText(20,16777215,false,maxWidth,0);

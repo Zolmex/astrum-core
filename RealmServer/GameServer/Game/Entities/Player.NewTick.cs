@@ -19,18 +19,21 @@ namespace GameServer.Game.Entities
         {
             lock (_entityStatLock)
             {
-                User.SendPacket(PacketId.NEWTICK, NewTick.Write(User, _entityStatUpdates));
+                NewTick.Write(User.Network, _entityStatUpdates);
                 _entityStatUpdates.Clear();
             }
         }
 
         private void HandleEntityStatChanged(Entity en, StatType type, object value)
         {
+            if (Dead)
+                return;
+
             lock (_entityStatLock)
             {
-                if (_entityStatUpdates.TryGetValue(en.Id, out _))
+                if (_entityStatUpdates.TryGetValue(en.Id, out var status))
                 {
-                    _entityStatUpdates[en.Id].Update(en.Position, type, value);
+                    status.Update(en.Position, type, value);
                 }
                 else
                 {

@@ -6,8 +6,10 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Unicode;
+using System.Threading.Tasks;
 using static System.Net.WebRequestMethods;
 
 namespace Common.Resources.World
@@ -80,6 +82,26 @@ namespace Common.Resources.World
         public string ObjectCfg;
         public byte Elevation;
         public TerrainType Terrain;
+
+        public loc GetEntry()
+        {
+            obj obj = new obj();
+            if (ObjectType != 0)
+            {
+                obj = new obj()
+                {
+                    id = XmlLibrary.ObjectDescs[ObjectType].ObjectId,
+                    name = Key
+                };
+            }
+
+            return new loc()
+            {
+                ground = XmlLibrary.TileDescs[GroundType].GroundId,
+                objs = obj.id != null ? new obj[] { obj } : null,
+                regions = Region != TileRegion.None ? new obj[] { new obj() { id = Region.ToString() } } : null
+            };
+        }
     }
 
     // https://github.com/dhojka7/realm-server/blob/456166cbd3c43ade24df8f7904db1f7863e4ebde/Game/JSMap.cs#L55
@@ -149,6 +171,36 @@ namespace Common.Resources.World
             Height = json.height;
 
             InitRegions();
+        }
+
+        public string ExportJson()
+        {
+            var tempDict = new List<loc>();
+            var stream = new MemoryStream();
+            var wtr = new BinaryWriter(stream);
+            var json = new json_dat()
+            {
+                width = Width,
+                height = Height
+            };
+
+            for (var y = 0; y < Height; y++) // Save tile data
+            {
+                for (var x = 0; x < Width; x++)
+                {
+                    var tile = Tiles[x, y];
+                    tempDict.Add(tile.GetEntry());
+
+                    wtr.Write((short)tempDict.Count);
+                }
+                _log.Debug($"Y:{y};");
+            }
+
+            var buffer = stream.GetBuffer();
+            json.dict = tempDict.ToArray();
+            json.data = ZlibStream.CompressBuffer(buffer);
+
+            return JsonConvert.SerializeObject(json);
         }
 
         public void InitRegions()

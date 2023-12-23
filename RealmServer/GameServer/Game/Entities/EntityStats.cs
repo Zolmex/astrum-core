@@ -15,16 +15,14 @@ namespace GameServer.Game.Entities
         public event Action<Entity, StatType, object> StatChangedEvent;
 
         private readonly Entity _entity;
-        private readonly Dictionary<StatType, object> _stats;
+        private readonly Dictionary<StatType, object> _stats = new Dictionary<StatType, object>();
         private ObjectDropData _objDropData;
         private ObjectData _objData;
         private bool _updateStatus = true;
 
-        public EntityStats(Entity host)
+        public EntityStats(Entity entity)
         {
-            _entity = host;
-
-            _stats = new Dictionary<StatType, object>();
+            _entity = entity;
         }
 
         public T Get<T>(StatType statType)
@@ -89,7 +87,8 @@ namespace GameServer.Game.Entities
 
         public void Clear()
         {
-            _stats.Clear();
+            lock (_statsLock)
+                _stats.Clear();
             StatChangedEvent = null;
         }
     }

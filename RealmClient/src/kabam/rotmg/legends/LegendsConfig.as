@@ -6,6 +6,8 @@ import com.company.assembleegameclient.clientminigames.uadapong.UadaPongMediator
 import com.company.assembleegameclient.clientminigames.uadapong.UadaPongView;
 import com.company.assembleegameclient.clientminigames.zolmexclicker.ZolmexClickerMediator;
 import com.company.assembleegameclient.clientminigames.zolmexclicker.ZolmexClickerView;
+import com.company.assembleegameclient.mapeditor.EditingScreen;
+import com.company.assembleegameclient.mapeditor.EditingScreenMediator;
 
 import kabam.rotmg.legends.control.ExitLegendsCommand;
    import kabam.rotmg.legends.control.ExitLegendsSignal;
@@ -45,6 +47,7 @@ import kabam.rotmg.legends.control.ExitLegendsCommand;
          this.mediatorMap.map(LegendsView).toMediator(LegendsMediator);
          this.mediatorMap.map(ZolmexClickerView).toMediator(ZolmexClickerMediator);
          this.mediatorMap.map(UadaPongView).toMediator(UadaPongMediator);
+         this.mediatorMap.map(EditingScreen).toMediator(EditingScreenMediator);
          this.mediatorMap.map(ClientMinigamesView).toMediator(ClientMinigamesMediator);
          this.commandMap.map(RequestFameListSignal).toCommand(RequestFameListCommand);
          this.commandMap.map(ExitLegendsSignal).toCommand(ExitLegendsCommand);

@@ -79,8 +79,8 @@ namespace GameServer.Game.Worlds
             for (int y = 0; y < Height; y++)
                 for (int x = 0; x < Width; x++)
                 {
-                    var cX = (int)(x / ChunkMap.CHUNK_SIZE);
-                    var cY = (int)(y / ChunkMap.CHUNK_SIZE);
+                    var cX = (int)Math.Ceiling(x / ChunkMap.CHUNK_SIZE);
+                    var cY = (int)Math.Ceiling(y / ChunkMap.CHUNK_SIZE);
                     var chunk = Chunks[cX, cY];
                     var js = map.Tiles[x, y];
                     var tile = Tiles[x, y] = new WorldTile(js, x, y, chunk);

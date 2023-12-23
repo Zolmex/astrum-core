@@ -21,14 +21,14 @@ package com.company.assembleegameclient.mapeditor
       public var groundXML_:XML;
       
       private var tileShape_:Shape;
-      
+
       function GroundElement(groundXML:XML)
       {
          super(int(groundXML.@type));
          this.groundXML_ = groundXML;
          var graphicsData:Vector.<IGraphicsData> = new Vector.<IGraphicsData>();
          var camera:Camera = new Camera();
-         camera.configure(0.5,0.5,12,Math.PI / 4,new Rectangle(-100,-100,200,200),false);
+         camera.configure(0.5,0.5,12,Math.PI / 4,new Rectangle(-100,-100,200,200));
          var tileBD:BitmapData = GroundLibrary.getBitmapData(type_);
          var squareFace:SquareFace = new SquareFace(tileBD,VIN,0,0,AnimateProperties.NO_ANIMATE,0,0);
          squareFace.draw(graphicsData,camera,0);

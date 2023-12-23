@@ -498,7 +498,7 @@ namespace GameServer.Game.Worlds
                 totalCount += enCount;
             }
 
-            bool success = false;
+            bool success;
             RealmEventData eventData;
             do
             {
@@ -511,7 +511,7 @@ namespace GameServer.Game.Worlds
             var eventTerrain = (TerrainType)_rand.Next(1, 11); // From 1 to 10
             SpawnRealmEvent(eventData, eventTerrain);
 
-            _log.Info($"Spawned {totalCount} entities in the {_realm.Name} Realm.");
+            _log.Info($"Spawned {totalCount} entities in the {_realm.DisplayName} Realm.");
         }
 
         private void Repopulate()
@@ -547,7 +547,7 @@ namespace GameServer.Game.Worlds
                 SpawnRealmEvent(_config.Events.RandomElement(), terrain);
             }
 
-            _log.Debug($"Respawned {totalCount} entities in the {_realm.Name} Realm.");
+            _log.Debug($"Respawned {totalCount} entities in the {_realm.DisplayName} Realm.");
         }
 
         private int SpawnTerrainEnemy(ObjectDesc desc, TerrainType terrain)
@@ -606,7 +606,7 @@ namespace GameServer.Game.Worlds
                 if (_spawnedEvents.TryGetValue(eventDesc.ObjectId, out var count))
                     _spawnedEvents[eventDesc.ObjectId] += 1;
 
-                _log.Info($"Spawned {eventDesc.ObjectId} in the {_realm.Name} Realm.");
+                _log.Info($"Spawned {eventDesc.ObjectId} in the {_realm.DisplayName} Realm.");
             }
         }
 
