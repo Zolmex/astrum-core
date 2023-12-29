@@ -1,6 +1,7 @@
 ﻿using Common;
 using Common.Resources.Xml;
 using GameServer.Game.Collections;
+using GameServer.Game.Entities.Behaviors;
 using GameServer.Game.Network.Messaging;
 using GameServer.Game.Network.Messaging.Outgoing;
 using System;
