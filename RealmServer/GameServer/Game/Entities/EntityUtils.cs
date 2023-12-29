@@ -29,10 +29,17 @@ namespace GameServer.Game.Entities
             return dx * dx + dy * dy;
         }
 
-        public static double TileDistSqr(this Entity a, float tileX, float tileY)
+        public static double TileDistSqr(this Entity a, int tileX, int tileY)
         {
-            var dx = (int)a.Position.X - (int)tileX;
-            var dy = (int)a.Position.Y - (int)tileY;
+            var dx = (int)a.Position.X - tileX;
+            var dy = (int)a.Position.Y - tileY;
+            return dx * dx + dy * dy;
+        }
+
+        public static double TileDistSqr(this Entity a, Entity b)
+        {
+            var dx = (int)a.Position.X - (int)b.Position.X;
+            var dy = (int)a.Position.Y - (int)b.Position.Y;
             return dx * dx + dy * dy;
         }
 
@@ -40,9 +47,8 @@ namespace GameServer.Game.Entities
         //    => entity.World.ChunkManager.HitTest(entity.X, entity.Y, radius)
         //        .Where(e => e.Dist(entity, byTile) < radius);
 
-        //public static IEnumerable<T> GetNearestEntities<T>(this Entity entity, float radius, bool byTile = false) where T : Entity
-        //    => entity.World.ChunkManager.HitTest<T>(entity.X, entity.Y, radius)
-        //        .Where(e => e.Dist(entity, byTile) < radius);
+        public static IEnumerable<KeyValuePair<int, Player>> GetNearbyPlayers(this Entity entity, float radiusSqr)
+            => entity.World.Players.Where(kvp => kvp.Value.TileDistSqr(entity) < radiusSqr);
 
         //public static Entity GetNearestEntity(this Entity entity, float radius, bool byTile = false)
         //{
@@ -51,15 +57,15 @@ namespace GameServer.Game.Entities
         //    return ret.FirstOrDefault();
         //}
 
-        //public static T GetNearestEntity<T>(this Entity entity, float radius, bool byTile = false) where T : Entity
-        //{
-        //    var ret = GetNearestEntities<T>(entity, radius, byTile);
-        //    ret = ret.OrderBy(e => entity.Dist(e, byTile));
-        //    return ret.FirstOrDefault();
-        //}
+        public static Player GetNearbyPlayer(this Entity entity, float radius)
+        {
+            var ret = GetNearbyPlayers(entity, radius);
+            ret = ret.OrderBy(kvp => entity.DistSqr(kvp.Value));
+            return ret.FirstOrDefault().Value;
+        }
 
-        //public static float GetSpeed(this Character entity, float speed)
-        //    => entity.HasConditionEffect(ConditionEffectIndex.Slowed) ? (5.55f * speed + 0.74f) / 2 : 5.55f * speed + 0.74f;
+        public static float GetSpeed(this Character entity, float speed)
+            => /*entity.HasConditionEffect(ConditionEffectIndex.Slowed) ? (5.55f * speed + 0.74f) / 2 :*/ 5.55f * speed + 0.74f;
 
         //public static int GetDefenseDamage(this Character entity, int damage, int def, bool ignoreDef)
         //{

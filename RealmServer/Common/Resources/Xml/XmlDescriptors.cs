@@ -52,9 +52,6 @@ namespace Common.Resources.Xml
         public readonly bool RealmPortal;
 
         public readonly Dictionary<int, ProjectileDesc> Projectiles;
-        public readonly LootTableDesc LootTable;
-        public readonly StateDesc BehaviorState;
-        public readonly bool ActiveBehavior;
 
         public readonly float SpawnProb;
         public readonly SpawnDesc Spawn;
@@ -109,10 +106,6 @@ namespace Common.Resources.Xml
                 ProjectileDesc desc = new ProjectileDesc(k, ObjectType);
                 Projectiles[desc.BulletId] = desc;
             }
-
-            BehaviorState = e.HasElement("State") ? new StateDesc(e.Element("State")) : null;
-            LootTable = e.HasElement("LootTable") ? new LootTableDesc(e.Element("LootTable")) : null;
-            ActiveBehavior = e.HasElement("ActiveBehavior");
 
             SpawnProb = e.GetValue<float>("SpawnProb", 1);
             Spawn = e.HasElement("Spawn") ? new SpawnDesc(e.Element("Spawn")) : null;

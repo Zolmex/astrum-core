@@ -165,6 +165,9 @@
     <None Update="Resources\World\Data\WineCellar.jm">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Update="Resources\Xml\Behaviors\BehaviorLib_Test.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Update="Resources\Xml\Data\EmbeddedData_AbyssOfDemonsCXML.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>

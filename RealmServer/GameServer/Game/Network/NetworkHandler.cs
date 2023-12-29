@@ -179,20 +179,29 @@ namespace GameServer.Game.Network
         public async void StartSend()
         {
             while (SendState.Stream.Position == 0)
+            {
                 await Task.Delay(1);
 
-            if (User.State == ConnectionState.Disconnected || !Socket.Connected)
-            {
-                User.Disconnect(reason: DisconnectReason.Unknown);
-                return;
+                if (User.State == ConnectionState.Disconnected || !Socket.Connected)
+                {
+                    User.Disconnect(reason: DisconnectReason.Unknown);
+                    return;
+                }
             }
 
             int count;
             lock (SendState)
             {
-                count = (int)SendState.Stream.Position;
+                count = Math.Min((int)SendState.Stream.Position, BUFFER_SIZE);
 
-                Buffer.BlockCopy(SendState.Stream.GetBuffer(), 0, SendState.SocketBuffer, 0, count);
+                var streamBuffer = SendState.Stream.GetBuffer();
+                Buffer.BlockCopy(streamBuffer, 0, SendState.SocketBuffer, 0, count);
+
+                var newBytes = (int)SendState.Stream.Position - count; // Gets the number of bytes that were written during the completion of this operation
+                if (newBytes > 0)
+                    Buffer.BlockCopy(streamBuffer, count, streamBuffer, 0, newBytes);
+
+                SendState.Stream.Position = newBytes;
             }
 
             //_log.Debug($"SENDING {count} bytes TO {User.Id}");
@@ -220,17 +229,6 @@ namespace GameServer.Game.Network
                     msg = $"Send SocketError.{error}";
                 User.Disconnect(msg, DisconnectReason.NetworkError);
                 return;
-            }
-
-            lock (SendState) // Move bytes written during this async operation to the beginning of the stream
-            {
-                var buffer = SendState.Stream.GetBuffer();
-                var newBytes = (int)SendState.Stream.Position - args.BytesTransferred; // Gets the number of bytes that were written during the completion of this operation
-
-                if (newBytes > 0)
-                    Buffer.BlockCopy(buffer, args.BytesTransferred, buffer, 0, newBytes);
-
-                SendState.Stream.Position = newBytes;
             }
 
             StartSend();

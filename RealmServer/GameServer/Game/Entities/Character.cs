@@ -18,19 +18,30 @@ namespace GameServer.Game.Entities
     {
         public readonly ProjectileState[] Projectiles = new ProjectileState[256];
 
+        protected readonly BehaviorController _behaviorController;
         protected readonly Random _rand = new Random();
         protected byte _lastProjectileId;
         protected RealmTime _lastTick;
 
         public Character(ushort objType) : base(objType)
         {
+            if (BehaviorLibrary.RootStates.TryGetValue(Desc.ObjectId, out var rootState))
+                _behaviorController = new BehaviorController(this, rootState);
+        }
 
+        public override void Initialize()
+        {
+            base.Initialize();
+
+            _behaviorController?.Initialize();
         }
 
         public virtual bool Tick(RealmTime time)
         {
-            if (!_initialized || Dead || (_lastTick.TickCount != 0 && _lastTick.TickCount != time.TickCount - 1)) // Ensure that ticks only occur once per logic tick
+            if (!_initialized || Dead) // Ensure that ticks only occur once per logic tick
                 return false;
+
+            _behaviorController?.Tick(time);
 
             var timeDiff = (int)(time.TotalElapsedMs - _lastTick.TotalElapsedMs);
             foreach (var proj in Projectiles)
@@ -85,6 +96,11 @@ namespace GameServer.Game.Entities
                     }
                 });
             }
+        }
+
+        public virtual Player GetAttackTarget(float range)
+        {
+            return this.GetNearbyPlayer(range);
         }
 
         public override void Dispose()

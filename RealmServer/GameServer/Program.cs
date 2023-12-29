@@ -41,6 +41,7 @@ namespace GameServer
                 EnumUtils.Load(); // Initialize and prepare our static classes for later use
                 XmlLibrary.Load(config.XmlsDir);
                 WorldLibrary.Load(config.WorldsDir);
+                BehaviorLibrary.Load(config.BehaviorsDir);
 
                 DbClient.Connect(DatabaseConfig.Config);
 

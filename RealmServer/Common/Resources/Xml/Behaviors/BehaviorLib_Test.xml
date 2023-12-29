@@ -1,0 +1,10 @@
+﻿<BehaviorLib>
+    <!--<Behavior id="Pirate">
+        <State>
+            <State name="0">
+                <Behavior speed="0.85" range="1" coolDownMS="5000">Follow</Behavior>
+                <Behavior speed="0.4">Wander</Behavior>
+            </State>
+        </State>
+    </Behavior>-->
+</BehaviorLib>

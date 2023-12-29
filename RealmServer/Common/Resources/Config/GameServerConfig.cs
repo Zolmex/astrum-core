@@ -12,6 +12,7 @@ namespace Common.Resources.Config
         public static GameServerConfig Config
             => _config ??= Load();
 
+        public string BehaviorsDir { get; private set; }
         public string XmlsDir { get; private set; }
         public string WorldsDir { get; private set; }
         public int Port { get; private set; }
@@ -27,6 +28,7 @@ namespace Common.Resources.Config
 
         public GameServerConfig(XElement e)
         {
+            BehaviorsDir = e.GetValue<string>("BehaviorsDir");
             XmlsDir = e.GetValue<string>("XmlsDir");
             WorldsDir = e.GetValue<string>("WorldsDir");
             Port = e.GetValue<int>("Port");
