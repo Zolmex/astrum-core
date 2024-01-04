@@ -50,6 +50,9 @@ namespace GameServer.Game.Collections
             _drops.Enqueue(itemId);
         }
 
+        public virtual IEnumerable<T> GetAll()
+            => _dict.Values;
+
         public IEnumerator<KeyValuePair<int, T>> GetEnumerator()
         {
             var dictEnum = _dict.GetEnumerator();

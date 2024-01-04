@@ -17,8 +17,8 @@ namespace GameServer.Game.Entities.Behaviors.Library
             new BehaviorState(
                 new BehaviorState("0",
                     new Follow(0.85f, range: 1, coolDownMS: 5000),
-                    new Wander(0.4f)
-                    //new Shoot(3, coolDown: 2500)
+                    new Wander(0.4f),
+                    new Shoot(3, coolDownMS: 2500)
                     )
                 );
     }

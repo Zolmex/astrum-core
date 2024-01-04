@@ -169,11 +169,6 @@ public class GameSprite extends Sprite
             this.creditDisplay_.scaleX = scaleW;
             this.creditDisplay_.scaleY = scaleH;
         }
-        if (this.constellationsView != null) {
-            this.constellationsView.scaleX = scaleW / scaleH;
-            this.constellationsView.scaleY = 1;
-            this.constellationsView.x = 400 * (1 - this.constellationsView.scaleX);
-        }
     }
 
     private function showSafeAreaDisplays() : void

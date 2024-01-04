@@ -124,6 +124,7 @@ namespace GameServer.Game.Entities
             _oldEntities.Clear();
             lock (_entityStatLock)
                 _entityStatUpdates.Clear();
+            _chunk?.Remove(this);
             _chunk = null;
         }
     }

@@ -9,17 +9,15 @@ namespace GameServer.Game.Network.Messaging.Outgoing
     public class EnemyShoot : OutgoingPacket
     {
         public int OwnerId { get; set; }
-        public int BulletId { get; set; }
-        public byte BulletType { get; set; }
+        public int ProjId { get; set; }
+        public byte BulletId { get; set; }
         public WorldPosData StartPosition { get; set; }
         public float Angle { get; set; }
         public uint Damage { get; set; }
-        public byte NumShots { get; set; }
-        public float AngleInc { get; set; }
 
         public override PacketId ID => PacketId.ENEMYSHOOT;
 
-        public static void Write(NetworkHandler network, int bulletId, int ownerId, byte bulletType, WorldPosData startPos, float angle, uint dmg, byte numShots, float angleInc)
+        public static void Write(NetworkHandler network, byte projId, int ownerId, byte bulletId, WorldPosData startPos, float angle, uint dmg)
         {
             var state = network.SendState;
             var wtr = state.Writer;
@@ -27,17 +25,12 @@ namespace GameServer.Game.Network.Messaging.Outgoing
             {
                 var begin = state.PacketBegin();
 
-                wtr.Write(bulletId);
+                wtr.Write(projId);
                 wtr.Write(ownerId);
-                wtr.Write(bulletType);
+                wtr.Write(bulletId);
                 startPos.Write(wtr);
                 wtr.Write(angle);
                 wtr.Write(dmg);
-                if (numShots > 1)
-                {
-                    wtr.Write(numShots);
-                    wtr.Write(angleInc);
-                }
 
                 state.PacketEnd(begin, PacketId.ENEMYSHOOT);
             }

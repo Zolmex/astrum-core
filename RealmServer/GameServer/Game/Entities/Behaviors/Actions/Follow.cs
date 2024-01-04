@@ -21,7 +21,7 @@ namespace GameServer.Game.Entities.Behaviors.Actions
     {
         private readonly float _speed;
         private readonly float _rangeSqr;
-        private readonly float _acquireRange;
+        private readonly float _acquireRadiusSqr;
         private readonly int _coolDownMS;
 
         public Follow(XElement xml)
@@ -29,7 +29,8 @@ namespace GameServer.Game.Entities.Behaviors.Actions
             _speed = xml.GetAttribute<float>("speed", 1f);
             _rangeSqr = xml.GetAttribute<float>("range", 2f);
             _rangeSqr *= _rangeSqr;
-            _acquireRange = xml.GetAttribute<float>("acquireRange", 10f);
+            _acquireRadiusSqr = xml.GetAttribute<float>("acquireRange", 10f);
+            _acquireRadiusSqr *= _acquireRadiusSqr;
             _coolDownMS = xml.GetAttribute<int>("coolDownMS", 1000);
         }
 
@@ -37,7 +38,7 @@ namespace GameServer.Game.Entities.Behaviors.Actions
         {
             _speed = speed;
             _rangeSqr = range * range;
-            _acquireRange = acquireRange;
+            _acquireRadiusSqr = acquireRange * acquireRange;
             _coolDownMS = coolDownMS;
         }
 
@@ -51,7 +52,7 @@ namespace GameServer.Game.Entities.Behaviors.Actions
             var resource = (FollowInfo)controller.GetResource(this);
             if (resource.CoolDownLeft <= 0)
             {
-                var target = host.GetAttackTarget(_acquireRange);
+                var target = host.GetAttackTarget(_acquireRadiusSqr);
                 if (target == null)
                     return;
 

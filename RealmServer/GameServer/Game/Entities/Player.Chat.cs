@@ -79,12 +79,12 @@ namespace GameServer.Game.Entities
             //    en.ChatReceived(Id, text);
 
             // Send text message to players in current world
-            foreach (var kvp in World.Players)
+            World.BroadcastAll(plr =>
             {
-                var user = kvp.Value.User;
+                var user = plr.User;
                 if (!user.Account.IgnoredIds?.Contains(acc.AccountId) ?? true)
                     Text.Write(user.Network, acc.Admin ? $"@{acc.Name}" : acc.Name, Id, NumStars, (byte)5, null, text);
-            }
+            });
         }
 
         private bool ValidateSpeak(RealmTime time, string text)
@@ -106,7 +106,7 @@ namespace GameServer.Game.Entities
             var spaceIndex = text.IndexOf(' ');
             var command = text.Substring(0, spaceIndex == -1 ? text.Length : spaceIndex);
             var args = spaceIndex == -1 ? null : text.Substring(spaceIndex + 1);
-            PlayerCommand.ExecuteCommand(this, command, args);
+            CommandManager.ExecuteCommand(this, command, args);
         }
     }
 }

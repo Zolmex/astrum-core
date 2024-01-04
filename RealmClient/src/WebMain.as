@@ -2,8 +2,6 @@ package {
 import com.company.assembleegameclient.map.Camera;
 import com.company.assembleegameclient.parameters.Parameters;
 import com.company.assembleegameclient.sound.SoundEffectLibrary;
-import com.company.assembleegameclient.ui.constellations.xml.ConstellationsData;
-import com.company.assembleegameclient.ui.constellations.xml.ConstellationsDataStore;
 import com.company.assembleegameclient.util.AssetLoader;
 import com.company.assembleegameclient.util.FileManager;
 import com.company.assembleegameclient.util.StageProxy;
@@ -99,9 +97,6 @@ public class WebMain extends Sprite {
         STAGE = stage;
         STAGE.addEventListener(MouseEvent.RIGHT_CLICK, onRightClick)
         UIUtils.toggleQuality(Parameters.data_.quality);
-
-        var xmlData:XML = ConstellationsData.XMLData;
-        ConstellationsDataStore.getInstance().loadConstellationsDataFromXML(xmlData);
 
         setFileDefaults();
     }

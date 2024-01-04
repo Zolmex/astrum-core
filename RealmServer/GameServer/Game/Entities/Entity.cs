@@ -124,11 +124,12 @@ namespace GameServer.Game.Entities
                 if (Tile.Chunk != oldChunk)
                 {
                     var newChunk = Tile?.Chunk;
-                    World.OnUpdate(() =>
-                    {
-                        oldChunk?.Remove(this);
-                        newChunk.Insert(this);
-                    });
+                    if (newChunk != null)
+                        World.OnUpdate(() =>
+                        {
+                            oldChunk?.Remove(this);
+                            newChunk.Insert(this);
+                        });
                 }
             }
 

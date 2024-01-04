@@ -3,6 +3,7 @@ using GameServer.Game.Worlds;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -17,9 +18,7 @@ namespace GameServer.Game.Entities
 
         public static float DistSqr(this Entity a, float x, float y)
         {
-            var dx = a.Position.X - x;
-            var dy = a.Position.Y - y;
-            return dx * dx + dy * dy;
+            return DistSqr(a.Position.X, a.Position.Y, x, y);
         }
 
         public static float DistSqr(this Entity a, Entity b)
@@ -27,6 +26,19 @@ namespace GameServer.Game.Entities
             var dx = a.Position.X - b.Position.X;
             var dy = a.Position.Y - b.Position.Y;
             return dx * dx + dy * dy;
+        }
+
+        public static float DistSqr(WorldPosData pos1, WorldPosData pos2)
+        {
+            return (pos1.X - pos2.X) * (pos1.Y - pos2.Y);
+        }
+        public static float DistSqr(Vector2 a, Vector2 b)
+        {
+            return (a.X - b.X) * (a.Y - b.Y);
+        }
+        public static float DistSqr(float x1, float y1, float x2, float y2)
+        {
+            return (x1 - x2) * (y1 - y2);
         }
 
         public static double TileDistSqr(this Entity a, int tileX, int tileY)
@@ -43,25 +55,28 @@ namespace GameServer.Game.Entities
             return dx * dx + dy * dy;
         }
 
-        //public static IEnumerable<Entity> GetNearestEntities(this Entity entity, float radius, bool byTile = false)
-        //    => entity.World.ChunkManager.HitTest(entity.X, entity.Y, radius)
-        //        .Where(e => e.Dist(entity, byTile) < radius);
-
-        public static IEnumerable<KeyValuePair<int, Player>> GetNearbyPlayers(this Entity entity, float radiusSqr)
-            => entity.World.Players.Where(kvp => kvp.Value.TileDistSqr(entity) < radiusSqr);
-
-        //public static Entity GetNearestEntity(this Entity entity, float radius, bool byTile = false)
-        //{
-        //    var ret = GetNearestEntities(entity, radius, byTile);
-        //    ret = ret.OrderBy(e => entity.Dist(e, byTile));
-        //    return ret.FirstOrDefault();
-        //}
-
-        public static Player GetNearbyPlayer(this Entity entity, float radius)
+        public static Player GetNearestPlayer(this Entity entity, float radiusSqr)
         {
-            var ret = GetNearbyPlayers(entity, radius);
-            ret = ret.OrderBy(kvp => entity.DistSqr(kvp.Value));
-            return ret.FirstOrDefault().Value;
+            Player ret = null;
+            var center = entity.Tile?.Chunk;
+            var minDist = 0f;
+            for (var cY = center.CY - Player.ACTIVE_RADIUS; cY <= center.CY + Player.ACTIVE_RADIUS; cY++)
+                for (var cX = center.CX - Player.ACTIVE_RADIUS; cX <= center.CX + Player.ACTIVE_RADIUS; cX++)
+                {
+                    var chunk = entity.World.Map.Chunks[cX, cY];
+                    if (chunk != null)
+                        lock (chunk.Players)
+                            foreach (var plr in chunk.Players)
+                            {
+                                var distSqr = plr.DistSqr(entity);
+                                if (minDist == 0 || distSqr < minDist)
+                                {
+                                    ret = plr as Player;
+                                    minDist = distSqr;
+                                }
+                            }
+                }
+            return ret;
         }
 
         public static float GetSpeed(this Character entity, float speed)

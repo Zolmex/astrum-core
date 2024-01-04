@@ -5,14 +5,12 @@ import kabam.rotmg.messaging.impl.data.WorldPosData;
 
 public class EnemyShoot extends IncomingMessage {
 
-    public var bulletId_:uint;
+    public var projId_:uint;
     public var ownerId_:int;
     public var bulletType_:int;
     public var startingPos_:WorldPosData;
     public var angle_:Number;
     public var damage_:uint;
-    public var numShots_:int;
-    public var angleInc_:Number;
 
     public function EnemyShoot(id:uint, callback:Function) {
         this.startingPos_ = new WorldPosData();
@@ -20,20 +18,12 @@ public class EnemyShoot extends IncomingMessage {
     }
 
     override public function parseFromInput(data:IDataInput):void {
+        this.projId_ = data.readUnsignedByte();
         this.ownerId_ = data.readInt();
-        this.bulletId_ = data.readUnsignedInt();
         this.bulletType_ = data.readUnsignedByte();
         this.startingPos_.parseFromInput(data);
         this.angle_ = data.readFloat();
         this.damage_ = data.readUnsignedInt();
-        if (data.bytesAvailable > 0) {
-            this.numShots_ = data.readUnsignedByte();
-            this.angleInc_ = data.readFloat();
-        }
-        else {
-            this.numShots_ = 1;
-            this.angleInc_ = 0;
-        }
     }
 
     override public function toString():String {

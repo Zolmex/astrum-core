@@ -41,9 +41,11 @@ namespace GameServer.Game.Entities.Behaviors.Actions
             controller.InsertResource(this, new TauntInfo());
 
             if (_coolDownMS == 0 && _rand.NextDouble() < _probability)
-                foreach (var kvp in host.World.Players)
-                    if (host.DistSqr(kvp.Value) < Player.SIGHT_RADIUS_SQR)
-                        kvp.Value.SendEnemy(host, _text.RandomElement());
+                host.World.BroadcastAll(plr =>
+                {
+                    if (host.DistSqr(plr) < Player.SIGHT_RADIUS_SQR)
+                        plr.SendEnemy(host, _text.RandomElement());
+                });
         }
 
         public void Tick(Character host, RealmTime time, BehaviorController controller)
@@ -60,9 +62,11 @@ namespace GameServer.Game.Entities.Behaviors.Actions
 
             resource.CoolDownLeft = _coolDownMS;
             if (_rand.NextDouble() < _probability)
-                foreach (var kvp in host.World.Players)
-                    if (host.DistSqr(kvp.Value) < Player.SIGHT_RADIUS_SQR)
-                        kvp.Value.SendEnemy(host, _text.RandomElement());
+                host.World.BroadcastAll(plr =>
+                {
+                    if (host.DistSqr(plr) < Player.SIGHT_RADIUS_SQR)
+                        plr.SendEnemy(host, _text.RandomElement());
+                });
         }
 
         public void Exit(Character host, RealmTime time, BehaviorController controller)

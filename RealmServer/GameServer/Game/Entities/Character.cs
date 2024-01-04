@@ -82,26 +82,23 @@ namespace GameServer.Game.Entities
 
                 World.BroadcastAll(plr =>
                 {
-                    if (plr.DistSqr(this) >= Player.SIGHT_RADIUS_SQR)
+                    if (plr.DistSqr(this) <= Player.SIGHT_RADIUS_SQR)
                     {
                         EnemyShoot.Write(plr.User.Network,
-                            proj.BulletId,
+                            projIndex,
                             Id,
                             projDesc.BulletId,
                             startPos,
-                            angle,
-                            dmg,
-                            numShots,
-                            angleInc
-                            );
+                            angle + angleInc * i,
+                            dmg);
                     }
                 });
             }
         }
 
-        public virtual Player GetAttackTarget(float range)
+        public virtual Player GetAttackTarget(float radiusSqr)
         {
-            return this.GetNearbyPlayer(range);
+            return this.GetNearestPlayer(radiusSqr);
         }
 
         public override void Dispose()

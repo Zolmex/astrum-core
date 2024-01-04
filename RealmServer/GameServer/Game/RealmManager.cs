@@ -3,11 +3,13 @@ using Common.Utilities;
 using GameServer.Game.Chat;
 using GameServer.Game.Chat.Commands;
 using GameServer.Game.Collections;
+using GameServer.Game.Entities;
 using GameServer.Game.Worlds;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -38,7 +40,7 @@ namespace GameServer.Game
         {
             TPS = GameServerConfig.Config.TPS;
 
-            PlayerCommand.Load();
+            CommandManager.Load();
             Timers = new List<Tuple<int, Action>>();
 
             AddWorld(new Nexus());
@@ -135,5 +137,8 @@ namespace GameServer.Game
             ActiveRealms.Add(realmName);
             ChatManager.Announce($"A portal to {realmName} has been opened.");
         }
+
+        public static IEnumerable<Player> GetActivePlayers()
+            => Users.GetAll().Where(user => user.State == ConnectionState.Ready && user.GameInfo.State == GameState.Playing).Select(user => user.GameInfo.Player);
     }
 }

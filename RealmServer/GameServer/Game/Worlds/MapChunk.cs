@@ -14,6 +14,7 @@ namespace GameServer.Game.Worlds
         public int CX { get; private set; }
         public int CY { get; private set; }
         public HashSet<Entity> Entities { get; private set; }
+        public HashSet<Entity> Players { get; private set; } // Cast Player class when you need to
 
         public int Activity; // Nearby players will increase this value by 1, and decrease it when they get far away
 
@@ -22,18 +23,27 @@ namespace GameServer.Game.Worlds
             CX = cX;
             CY = cY;
             Entities = new HashSet<Entity>();
+            Players = new HashSet<Entity>();
         }
 
         public void Insert(Entity en)
         {
             lock (Entities)
                 Entities.Add(en);
+
+            if (en.IsPlayer)
+                lock (Players)
+                    Players.Add(en);
         }
 
         public void Remove(Entity en)
         {
             lock (Entities)
                 Entities.Remove(en);
+
+            if (en.IsPlayer)
+                lock (Players)
+                    Players.Remove(en);
         }
 
         public void ActivityUp()

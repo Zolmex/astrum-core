@@ -18,7 +18,7 @@ namespace GameServer.Game.Entities
     {
         public const int SIGHT_RADIUS = 16;
         public const int SIGHT_RADIUS_SQR = SIGHT_RADIUS * SIGHT_RADIUS;
-        private const int ACTIVE_RADIUS = 1; // Activate surrounding chunks
+        public const int ACTIVE_RADIUS = 1; // Activate surrounding chunks
 
         private readonly HashSet<WorldTile> _visibleTiles = new HashSet<WorldTile>();
         private readonly HashSet<WorldTile> _tilesDiscovered = new HashSet<WorldTile>();

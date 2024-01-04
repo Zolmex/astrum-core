@@ -292,5 +292,11 @@ namespace GameServer.Game.Worlds
             Enemies.Clear();
             Players.Clear();
         }
+
+        public IEnumerable<Player> GetAllPlayers()
+            => Players.GetAll();
+
+        public IEnumerable<Player> GetAllPlayersWithin(float x, float y, float radius)
+            => GetAllPlayers().Where(plr => plr.DistSqr(x, y) <= radius);
     }
 }

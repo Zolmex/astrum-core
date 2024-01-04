@@ -475,12 +475,6 @@ public class GameServerConnection {
         this.serverConnection.sendMessage(aoeAck);
     }
 
-    public function shootAck(time:int):void {
-        var shootAck:ShootAck = this.messages.require(SHOOTACK) as ShootAck;
-        shootAck.time_ = time;
-        this.serverConnection.sendMessage(shootAck);
-    }
-
     public function playerText(textStr:String):void {
         var playerTextMessage:PlayerText = this.messages.require(PLAYERTEXT) as PlayerText;
         playerTextMessage.text_ = textStr;
@@ -687,9 +681,6 @@ public class GameServerConnection {
             proj.setDamage(serverPlayerShoot.damageList_[i]);
             this.gs_.map.addObj(proj, serverPlayerShoot.startingPos_.x_, serverPlayerShoot.startingPos_.y_);
         }
-        if (serverPlayerShoot.ownerId_ == this.playerId_) {
-            this.shootAck(this.gs_.lastUpdate_);
-        }
     }
 
     private function onAllyShoot(allyShoot:AllyShoot):void {
@@ -714,20 +705,17 @@ public class GameServerConnection {
     }
 
     private function onEnemyShoot(enemyShoot:EnemyShoot):void {
-        var proj:Projectile = null;
-        var angle:Number = NaN;
         var owner:GameObject = this.gs_.map.goDict_[enemyShoot.ownerId_];
-
-        for (var i:int = 0; i < enemyShoot.numShots_; i++) {
-            proj = FreeList.newObject(Projectile) as Projectile;
-            angle = enemyShoot.angle_ + enemyShoot.angleInc_ * i;
-            proj.reset(owner.objectType_, enemyShoot.bulletType_, enemyShoot.ownerId_, enemyShoot.bulletId_ + i, angle, this.gs_.lastUpdate_);
-            proj.setDamage(enemyShoot.damage_);
-            this.gs_.map.addObj(proj, enemyShoot.startingPos_.x_, enemyShoot.startingPos_.y_);
+        if (owner == null) {
+            return;
         }
+        var proj:Projectile = FreeList.newObject(Projectile) as Projectile;
+        var angle:Number = enemyShoot.angle_;
+        proj.reset(owner.objectType_, enemyShoot.bulletType_, enemyShoot.ownerId_, enemyShoot.projId_, angle, this.gs_.lastUpdate_);
+        proj.setDamage(enemyShoot.damage_);
+        this.gs_.map.addObj(proj, enemyShoot.startingPos_.x_, enemyShoot.startingPos_.y_);
 
-        this.shootAck(this.gs_.lastUpdate_);
-        owner.setAttack(owner.objectType_, enemyShoot.angle_ + enemyShoot.angleInc_ * ((enemyShoot.numShots_ - 1) / 2));
+        owner.setAttack(owner.objectType_, enemyShoot.angle_);
     }
 
     private function dropObject(obj:ObjectDropData):void {

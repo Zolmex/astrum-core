@@ -20,59 +20,67 @@ namespace GameServer.Game.Network
     {
         public readonly NetworkReader Reader;
 
-        // Total receive buffer bytes
         public byte[] Buffer { get; set; } = new byte[NetworkHandler.BUFFER_SIZE];
-        // These 3 next properties contribute to the process explained above.
         public PacketId PacketId { get; set; }
         public int PacketLength { get; set; }
-        public int TotalBytesRead { get; set; }
-        public int PacketBytesRead { get; set; }
+        public int BytesAvailable { get; set; }
 
         public SocketReceiveState()
         {
             Reader = new NetworkReader(new MemoryStream(Buffer));
         }
 
-        public int ReadReceivedBytes(int bytesNotRead)
+        public int ReadRemainingBytes(int bytesNotRead)
         {
-            int read = bytesNotRead;
-            if (PacketLength != 0)
-                read = Math.Min(bytesNotRead, PacketLength - PacketBytesRead);
-
-            if (PacketLength == 0 && read >= 5)
+            if (PacketLength == 0)
             {
-                PacketLength = Reader.ReadInt32();
-                PacketId = (PacketId)Reader.ReadByte();
+                if (BytesAvailable + bytesNotRead < 4)
+                {
+                    BytesAvailable += bytesNotRead;
+                    return bytesNotRead;
+                }
 
-                read = Math.Min(bytesNotRead, PacketLength - PacketBytesRead);
+                PacketLength = Reader.ReadInt32();
             }
 
-            // Keep count of the bytes we're currently reading
-            PacketBytesRead += read;
-            TotalBytesRead += read;
-            return read;
+            if (BytesAvailable + bytesNotRead < PacketLength - 4)
+            {
+                BytesAvailable += bytesNotRead;
+                return bytesNotRead;
+            }
+
+            PacketId = (PacketId)Reader.ReadByte(); // There are enough bytes to read the entire packet, so we read just the bytes we need for the current packet being read
+            var count = PacketLength - BytesAvailable;
+
+            BytesAvailable = PacketLength;
+            return count;
         }
 
         public void EndRead()
         {
-            if (PacketBytesRead != 0)
-                System.Buffer.BlockCopy(Buffer, TotalBytesRead - PacketBytesRead, Buffer, 0, PacketBytesRead);
-            TotalBytesRead = PacketBytesRead;
-            Reader.BaseStream.Seek(0, SeekOrigin.Begin);
+            try
+            {
+                if (BytesAvailable != 0)
+                    System.Buffer.BlockCopy(Buffer, (int)Reader.BaseStream.Position, Buffer, 0, BytesAvailable);
+                Reader.BaseStream.Seek(0, SeekOrigin.Begin);
+            }
+            catch (Exception e)
+            {
+                Logger.Error(e);
+            }
         }
 
         public void EndPacketRead()
         {
             PacketLength = 0;
-            PacketBytesRead = 0;
+            BytesAvailable = 0;
             PacketId = PacketId.FAILURE;
         }
 
         public void Reset()
         {
-            TotalBytesRead = 0;
             PacketLength = 0;
-            PacketBytesRead = 0;
+            BytesAvailable = 0;
             PacketId = PacketId.FAILURE;
             Reader.BaseStream.Seek(0, SeekOrigin.Begin);
         }
@@ -83,6 +91,7 @@ namespace GameServer.Game.Network
         public NetworkWriter Writer { get; private set; }
         public MemoryStream Stream { get; private set; }
         public byte[] SocketBuffer { get; private set; } = new byte[NetworkHandler.BUFFER_SIZE];
+        public int LastValidIndex { get; private set; }
 
         public SocketSendState()
         {
@@ -105,6 +114,9 @@ namespace GameServer.Game.Network
             Writer.Write((byte)pkt);
             Stream.Position += length - 5; // Go to the next position after packet body to write the next packet
 
+            if (Stream.Position < NetworkHandler.BUFFER_SIZE)
+                LastValidIndex = (int)Stream.Position;
+
             //Logger.Debug($"WRITING {pkt} DATA TO BUFFER");
         }
 
@@ -112,6 +124,7 @@ namespace GameServer.Game.Network
         {
             lock (this)
             {
+                LastValidIndex = 0;
                 Stream.SetLength(0);
             }
         }
@@ -192,16 +205,12 @@ namespace GameServer.Game.Network
             int count;
             lock (SendState)
             {
-                count = Math.Min((int)SendState.Stream.Position, BUFFER_SIZE);
+                count = SendState.LastValidIndex; // Gets the position of the last packet that fits within the buffer size
 
                 var streamBuffer = SendState.Stream.GetBuffer();
                 Buffer.BlockCopy(streamBuffer, 0, SendState.SocketBuffer, 0, count);
 
-                var newBytes = (int)SendState.Stream.Position - count; // Gets the number of bytes that were written during the completion of this operation
-                if (newBytes > 0)
-                    Buffer.BlockCopy(streamBuffer, count, streamBuffer, 0, newBytes);
-
-                SendState.Stream.Position = newBytes;
+                SendState.Stream.Position = 0;
             }
 
             //_log.Debug($"SENDING {count} bytes TO {User.Id}");
@@ -209,8 +218,12 @@ namespace GameServer.Game.Network
             // ASYNC SEND
             _send.SetBuffer(0, count);
 
-            if (Socket != null && !Socket.SendAsync(_send))
-                ProcessSend(null, _send);
+            try
+            {
+                if (Socket != null && !Socket.SendAsync(_send))
+                    ProcessSend(null, _send);
+            }
+            catch { }
         }
 
         private void ProcessSend(object sender, SocketAsyncEventArgs args)
@@ -246,7 +259,7 @@ namespace GameServer.Game.Network
             // can't be avoided in certain situations, so a try-catch block is required.
             try
             {
-                _receive.SetBuffer(_receiveState.TotalBytesRead, BUFFER_SIZE - _receiveState.TotalBytesRead);
+                _receive.SetBuffer(_receiveState.BytesAvailable, BUFFER_SIZE - _receiveState.BytesAvailable);
 
                 if (!Socket.ReceiveAsync(_receive))
                     ProcessReceive(null, _receive);
@@ -285,7 +298,7 @@ namespace GameServer.Game.Network
             // Start reading bytes from the previous point
             while (bytesNotRead > 0)
             {
-                var read = _receiveState.ReadReceivedBytes(bytesNotRead);
+                var read = _receiveState.ReadRemainingBytes(bytesNotRead);
 
                 // Policy file check
                 if (_receiveState.PacketLength == 1014001516)
@@ -295,16 +308,17 @@ namespace GameServer.Game.Network
                 }
 
                 bytesNotRead -= read;
+                //_log.Debug($"RECEIVING {read} BYTES FROM {User.Id} L:{_receiveState.PacketLength} B:{_receiveState.BytesAvailable}");
 
                 // If the entire packet is read, process it
-                if (_receiveState.PacketLength != 0 && _receiveState.PacketBytesRead >= _receiveState.PacketLength)
+                if (_receiveState.PacketLength != 0 && _receiveState.BytesAvailable == _receiveState.PacketLength)
                 {
                     var packetId = _receiveState.PacketId;
                     if (_incoming.ContainsKey(packetId))
                     {
                         try
                         {
-                            //_log.Debug($"RECEIVING {packetId} ({_receiveState.PacketBytesRead} bytes)");
+                            //_log.Debug($"RECEIVING {packetId} ({_receiveState.BytesAvailable} bytes)");
                             _incoming[packetId].ReadBody(User, _receiveState.Reader);
                         }
                         catch (Exception e)
@@ -312,6 +326,11 @@ namespace GameServer.Game.Network
                             _log.Error(e);
                             User.SendFailure(Failure.DEFAULT, $"Error processing packet {packetId}: {e.Message}");
                         }
+                    }
+                    else // This means the reader's position is still at the packetid, we need to move that to the end of the packet
+                    {
+                        var count = _receiveState.PacketLength - 5; // Subtract 4 bytes (length) + 1 byte (packetid)
+                        _receiveState.Reader.BaseStream.Seek(count, SeekOrigin.Current);
                     }
 
                     // Reset the packet reading process

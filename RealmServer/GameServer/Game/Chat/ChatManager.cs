@@ -29,11 +29,7 @@ namespace GameServer.Game.Chat
 
         public static void Oryx(World world, string text)
         {
-            foreach (var kvp in world.Players)
-            {
-                var plr = kvp.Value;
-                plr.SendEnemy("Oryx the Mad God", text);
-            }
+            world.BroadcastAll(plr => plr.SendEnemy("Oryx the Mad God", text));
             _log.Debug($"<Oryx the Mad God> {text}");
         }
     }
